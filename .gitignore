@@ -1,0 +1,8 @@
+node_modules
+
+# IDE - VSCode
+!.vscode/launch.json
+
+.history/*
+dist
+coverage
