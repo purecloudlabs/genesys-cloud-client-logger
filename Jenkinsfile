@@ -17,7 +17,6 @@ webappPipeline {
         return [
             managerEmail: 'purecloud-client-media@genesys.com',
             rollbackPlan: 'Patch version with fix',
-            testResults: 'https://jenkins.ininica.com/job/valve-webrtcsdk-tests-test/'
         ]
     }
 
