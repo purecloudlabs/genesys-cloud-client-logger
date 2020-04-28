@@ -1,9 +1,8 @@
-import { LogLevels, ITrace, RequestApiOptions, IServerOpts } from './interfaces';
+import { LogLevels, ITrace, RequestApiOptions, IServerOpts, ISendLogRequest } from './interfaces';
 import { v4 } from 'uuid';
 import stringify from 'safe-json-stringify';
 import { calculateLogMessageSize, calculateLogBufferSize } from './utils';
-import backoff, { Backoff, IBackoffOpts } from 'backoff-web';
-import request from 'superagent';
+import uploader from './log-uploader';
 
 const LOG_LEVELS: string[] = Object.keys(LogLevels);
 const PAYLOAD_TOO_LARGE = 413;
@@ -25,10 +24,8 @@ export class Logger {
   declare private clientId: string;
   private logBufferSize: number = 0;
   private logBuffer: ITrace[] = [];
-  private backoffActive = false;
+  private logRequestPending = false;
   private failedLogAttempts = 0;
-  private reduceLogPayload = false;
-  private backoff!: Backoff;
   private sendLogTimer: any;
   private opts!: IServerOpts;
   private isInitialized = false;
@@ -68,30 +65,7 @@ export class Logger {
       throw new Error('Must provide an accessToken for server uploads');
     }
 
-    const backoffOpts: IBackoffOpts = opts.backoffOpts || {
-      randomisationFactor: 0.2,
-      initialDelay: 500,
-      maxDelay: 5000,
-      factor: 2
-    }
-
-    this.backoff = backoff.exponential(backoffOpts);
-
-    this.backoff.failAfter(20);
-
-    this.backoff.on('backoff', () => {
-      this.backoffActive = true;
-      return this.sendLogs.call(this);
-    });
-
-    this.backoff.on('ready', () => {
-      this.backoff.backoff();
-    });
-
-    this.backoff.on('fail', () => {
-      this.backoffActive = false;
-    });
-
+    uploader.setEnvironment(opts.environment);
     this.isInitialized = true;
   }
 
@@ -164,7 +138,7 @@ export class Logger {
     }
 
     if (sendImmediately) {
-      if (!this.backoffActive) {
+      if (!this.logRequestPending) {
         return this.tryToSendLogs();
       } else {
         this.info('Tried to send logs immeidately but a send request is already pending. Waiting for pending request to finish', null, true);
@@ -174,15 +148,21 @@ export class Logger {
   }
 
   private tryToSendLogs () {
-    if (!this.backoffActive && this.backoff) {
-      this.backoff.backoff();
+    if (!this.logRequestPending) {
+      this.queueLogsUpload();
     }
   }
 
-  private sendLogs (): Promise<void> {
+  private async queueLogsUpload (): Promise<void> {
     const traces = this.getLogPayload();
     this.logBufferSize = calculateLogBufferSize(this.logBuffer);
-    const payload = {
+
+    if (traces.length === 0) {
+      return Promise.resolve();
+    }
+
+    const request: ISendLogRequest = {
+      accessToken: this.opts.accessToken,
       app: {
         appId: this.opts.logTopic,
         appVersion: this.opts.appVersion
@@ -190,24 +170,16 @@ export class Logger {
       traces
     };
 
-    if (traces.length === 0) {
-      return Promise.resolve();
-    }
-
-    return this.requestApi.call(this, '/diagnostics/trace', {
-      method: 'post',
-      contentType: 'application/json; charset=UTF-8',
-      data: JSON.stringify(payload)
-    }).then(() => {
+    try {
+      this.logRequestPending = true;
+      await uploader.sendLogs(request);
       this.log('Log data sent successfully', null, true);
-      this.resetBackoffFlags();
-      this.backoff.reset();
-
+      this.reset();
       if (this.logBuffer.length) {
         this.log('Data still left in log buffer, preparing to send again', null, true);
-        this.backoff.backoff();
+        this.notifyLogs();
       }
-    }).catch((error) => {
+    } catch (error) {
       this.failedLogAttempts++;
 
       if (error.status === PAYLOAD_TOO_LARGE) {
@@ -215,12 +187,10 @@ export class Logger {
 
         // If sending a single log is too big, then scrap it and reset backoff
         if (traces.length === 1) {
-          this.resetBackoffFlags();
-          this.backoff.reset();
+          this.reset();
+          this.notifyLogs();
           return;
         }
-
-        this.reduceLogPayload = true;
       } else {
         this.error('Failed to post logs to server', traces, true);
       }
@@ -229,45 +199,40 @@ export class Logger {
       const reverseTraces = traces.reverse(); // Reverse traces so they will be unshifted into their original order
       reverseTraces.forEach((log: ITrace) => this.logBuffer.unshift(log));
       this.logBufferSize = calculateLogBufferSize(this.logBuffer);
-    });
+    }
   }
+  private getLogPayload (): ITrace[] {
+    const maxPayloadSize = MAX_LOG_SIZE / (this.failedLogAttempts + 1);
 
-  private getLogPayload () {
-    let traces;
-    if (this.reduceLogPayload) {
-      const bufferDivisionFactor = this.failedLogAttempts || 1;
-      traces = this.getReducedLogPayload(bufferDivisionFactor);
-    } else {
-      traces = this.logBuffer.splice(0, this.logBuffer.length);
+    let currentSize = 0;
+    const traces: ITrace[] = [];
+
+    for (const trace of this.logBuffer) {
+      const size = calculateLogMessageSize(trace);
+
+      if (currentSize + size > maxPayloadSize) {
+        break;
+      }
+
+      currentSize += size;
+      traces.push(trace);
     }
 
+    if (traces.length === 0) {
+      const firstTrace = this.logBuffer.splice(0, 1);
+      this.warn('Message too large to be logged to server', firstTrace, true);
+      this.failedLogAttempts = 0;
+
+      return this.getLogPayload();
+    }
+
+    this.logBuffer.splice(0, traces.length);
+
     return traces;
   }
 
-  private getReducedLogPayload (reduceFactor: number) {
-    const reduceBy = reduceFactor * 2;
-    const itemsToGet = Math.floor(this.logBuffer.length / reduceBy) || 1;
-    const traces = this.logBuffer.splice(0, itemsToGet);
-    return traces;
-  }
-
-  private resetBackoffFlags () {
-    this.backoffActive = false;
+  private reset () {
+    this.logRequestPending = false;
     this.failedLogAttempts = 0;
-    this.reduceLogPayload = false;
   }
-
-  private buildUri (path: string, version: string = 'v2'): string {
-    path = path.replace(/^\/+|\/+$/g, ''); // trim leading/trailing /
-    return `https://api.${this.opts.environment}/api/${version}/${path}`;
-  };
-
-  private requestApi (path: string, reqOpts: RequestApiOptions = {}): Promise<any> {
-    const req = (request as any)[reqOpts.method || 'get'](this.buildUri(path, this.opts.appVersion));
-    req.set('Authorization', `Bearer ${this.opts.accessToken}`);
-    req.type(reqOpts.contentType || 'json');
-
-    return req.send(reqOpts.data);
-  };
-
 }

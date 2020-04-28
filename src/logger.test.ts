@@ -1,12 +1,11 @@
 /* tslint:disable:no-string-literal */
 import { Logger } from './logger';
 import { IServerOpts, LogLevels } from './interfaces';
-import { Backoff } from 'backoff-web';
 import * as utils from './utils';
-import { wait } from './test-utils';
-import * as superagent from 'superagent';
+import * as logUploaderMod from './log-uploader';
 
-jest.mock('backoff-web');
+import { wait } from './test-utils';
+
 jest.mock('superagent');
 
 describe('constructor', () => {
@@ -30,12 +29,6 @@ describe('initializeServerLogging', () => {
       appVersion: '1.2.3',
       logTopic: 'client-logger-test',
       logLevel: LogLevels.warn,
-      backoffOpts: {
-        randomisationFactor: 0.2,
-        initialDelay: 500,
-        maxDelay: 5000,
-        factor: 2
-      },
       uploadDebounceTime: 100,
     }
   });
@@ -94,50 +87,6 @@ describe('initializeServerLogging', () => {
 
     const initialized = logger['isInitialized'];
     expect(initialized).toBeTruthy();
-  });
-
-  it('should handle missing backoffOpts', () => {
-    delete opts.backoffOpts;
-    logger.initializeServerLogging(opts);
-
-    const initialized = logger['isInitialized'];
-    expect(initialized).toBeTruthy();
-  });
-
-  describe('backoff events', () => {
-    let backoff: Backoff;
-
-    beforeEach(() => {
-      logger.initializeServerLogging(opts);
-
-      backoff = logger['backoff'];
-    })
-
-    it('should handle the backoff event', () => {
-      const spy = logger['sendLogs'] = jest.fn();
-
-      (backoff as any).triggerEvent('backoff');
-
-      expect(spy).toHaveBeenCalled();
-
-      const active = logger['backoffActive'];
-      expect(active).toBeTruthy();
-    });
-
-    it('should handle the ready event', () => {
-      (backoff as any).triggerEvent('ready');
-
-      expect(backoff.backoff).toHaveBeenCalled();
-    });
-
-    it('should handle the fail event', () => {
-      logger['backoffActive'] = true;
-
-      (backoff as any).triggerEvent('fail');
-
-      const active = logger['backoffActive'];
-      expect(active).toBeFalsy();
-    });
   });
 });
 
@@ -331,14 +280,14 @@ describe('notifyLogs', () => {
 
   it('should not send immediately if a request is already pending', () => {
     logger['sendLogTimer'] = 1241;
-    logger['backoffActive'] = true;
+    logger['logRequestPending'] = true;
 
     notifyLogs(true);
     expect(tryToSendLogs).not.toHaveBeenCalled();
   });
 
   it('should not send immediately', async () => {
-    logger['backoffActive'] = true;
+    logger['logRequestPending'] = true;
 
     notifyLogs();
     expect(tryToSendLogs).not.toHaveBeenCalled();
@@ -354,20 +303,11 @@ describe('tryToSendLogs', () => {
 
   beforeEach(() => {
     logger = new Logger();
-    spy = jest.fn();
-    logger['backoff'] = { backoff: spy } as any;
+    spy = logger['queueLogsUpload'] = jest.fn()
   });
 
   it('should not send if already active', () => {
-    logger['backoffActive'] = true;
-
-    logger['tryToSendLogs']();
-
-    expect(spy).not.toHaveBeenCalled();
-  });
-
-  it('should not send if no backoff', () => {
-    logger['backoff'] = null as any;
+    logger['logRequestPending'] = true;
 
     logger['tryToSendLogs']();
 
@@ -380,57 +320,60 @@ describe('tryToSendLogs', () => {
   });
 });
 
-describe('sendLogs', () => {
-  let requestApi: jest.Mock;
+describe('queueLogsUpload', () => {
   let logger: Logger;
   let getLogPayload: jest.Mock;
-  let resetBackoffFlags: jest.SpyInstance;
-  let backoff: Backoff;
+  let reset: jest.SpyInstance;
+  let notifySpy: jest.Mock;
+  let sendSpy: jest.Mock;
 
   beforeEach(() => {
     logger = new Logger();
     logger['opts'] = { logTopic: 'customTopic' } as any;
-    backoff = logger['backoff'] = { backoff: jest.fn(), reset: jest.fn() } as any;
-    requestApi = logger['requestApi'] = jest.fn();
+    sendSpy = jest.fn();
+    // @ts-ignore
+    logUploaderMod.default = { sendLogs: sendSpy } as any;
 
     // @ts-ignore
     getLogPayload = jest.spyOn(logger, 'getLogPayload').mockReturnValue();
-    resetBackoffFlags = logger['resetBackoffFlags'] = jest.fn();
+    reset = logger['reset'] = jest.fn();
+    notifySpy = logger['notifyLogs'] = jest.fn();
   });
 
   it('should not send anything if there are no traces', async () => {
     getLogPayload.mockReturnValue([]);
 
-    await logger['sendLogs']();
+    await logger['queueLogsUpload']();
 
-    expect(requestApi).not.toHaveBeenCalled();
+    expect(sendSpy).not.toHaveBeenCalled();
   });
 
   it('should succeed and reset flags', async () => {
-    requestApi.mockResolvedValue(null);
+    sendSpy.mockResolvedValue(null);
     getLogPayload.mockReturnValue([{ message: 'here we go' }]);
 
-    await logger['sendLogs']();
+    await logger['queueLogsUpload']();
 
-    expect(resetBackoffFlags).toHaveBeenCalled();
-    expect(backoff.backoff).not.toHaveBeenCalled();
+    expect(reset).toHaveBeenCalled();
+    expect(sendSpy).toHaveBeenCalled();
+    expect(notifySpy).not.toHaveBeenCalled();
   });
 
   it('should fire again if buffer is not empty', async () => {
-    requestApi.mockResolvedValue(null);
+    sendSpy.mockResolvedValue(null);
     getLogPayload.mockReturnValue([{ message: 'here we go' }]);
     logger['logBuffer'] = [{} as any];
 
-    await logger['sendLogs']();
+    await logger['queueLogsUpload']();
 
-    expect(resetBackoffFlags).toHaveBeenCalled();
-    expect(backoff.backoff).toHaveBeenCalled();
+    expect(reset).toHaveBeenCalled();
+    expect(notifySpy).toHaveBeenCalled();
   });
 
   describe('send failure cases', () => {
-    it('generic error should replace traces', async () => {
+    it('should inc failed attempts and add traces back to buffer', async () => {
       let rejectRequest: any;
-      requestApi.mockImplementation(() => new Promise((resolve, reject) => {
+      sendSpy.mockImplementation(() => new Promise((resolve, reject) => {
         rejectRequest = reject;
       }));
 
@@ -444,7 +387,7 @@ describe('sendLogs', () => {
 
       logger['logBuffer'] = [trace1, trace2, trace3] as any
 
-      const sendPromise = logger['sendLogs']();
+      const sendPromise = logger['queueLogsUpload']();
 
       expect(logger['logBuffer'].length).toBe(0);
       logger['logBuffer'] = [trace4] as any
@@ -455,25 +398,23 @@ describe('sendLogs', () => {
 
       expect(logger['logBuffer'].length).toBe(4);
       expect(logger['logBuffer']).toEqual([trace1, trace2, trace3, trace4]);
+      expect(logger['failedLogAttempts']).toEqual(1);
     });
 
     it('413 error should reduce payload', async () => {
       let rejectRequest: any;
-      requestApi.mockImplementation(() => new Promise((resolve, reject) => {
+      sendSpy.mockImplementation(() => new Promise((resolve, reject) => {
         rejectRequest = reject;
       }));
-
-      // use real value
-      getLogPayload.mockRestore();
 
       const trace1 = { message: 'message 1' };
       const trace2 = { message: 'message 2' };
       const trace3 = { message: 'message 3' };
       const trace4 = { message: 'message 4' };
 
-      logger['logBuffer'] = [trace1, trace2, trace3] as any
+      getLogPayload.mockReturnValue([ trace1, trace2, trace3 ]);
 
-      const sendPromise = logger['sendLogs']();
+      const sendPromise = logger['queueLogsUpload']();
 
       expect(logger['logBuffer'].length).toBe(0);
       logger['logBuffer'] = [trace4] as any
@@ -484,23 +425,21 @@ describe('sendLogs', () => {
 
       expect(logger['logBuffer'].length).toBe(4);
       expect(logger['logBuffer']).toEqual([trace1, trace2, trace3, trace4]);
-      expect(logger['reduceLogPayload']).toBeTruthy();
+      expect(logger['failedLogAttempts']).toBeTruthy();
+      expect(notifySpy).not.toHaveBeenCalled()
     });
 
     it('413 with only one trace should drop the trace', async () => {
       let rejectRequest: any;
-      requestApi.mockImplementation(() => new Promise((resolve, reject) => {
+      sendSpy.mockImplementation(() => new Promise((resolve, reject) => {
         rejectRequest = reject;
       }));
 
-      // use real value
-      getLogPayload.mockRestore();
-
       const trace1 = { message: 'message 1' };
+      getLogPayload.mockReturnValue([ trace1 ]);
 
-      logger['logBuffer'] = [trace1] as any
 
-      const sendPromise = logger['sendLogs']();
+      const sendPromise = logger['queueLogsUpload']();
 
       const trace4 = { message: 'message 4' };
 
@@ -513,9 +452,8 @@ describe('sendLogs', () => {
 
       expect(logger['logBuffer'].length).toBe(1);
       expect(logger['logBuffer']).toEqual([trace4]);
-      expect(logger['reduceLogPayload']).toBeFalsy();
-      expect(resetBackoffFlags).toHaveBeenCalled();
-      expect(backoff.reset).toHaveBeenCalled();
+      expect(logger['failedLogAttempts']).toEqual(1);
+      expect(reset).toHaveBeenCalled();
     });
   });
 });
@@ -527,7 +465,7 @@ describe('getLogPayload', () => {
     logger = new Logger();
   });
 
-  it('should grab all traces if not reducedLogPayload', () => {
+  it('should grab all traces', () => {
     const trace1 = { message: 'trace1' };
     const trace2 = { message: 'trace2' };
     const trace3 = { message: 'trace3' };
@@ -539,132 +477,51 @@ describe('getLogPayload', () => {
     expect(logger['logBuffer'].length).toBe(0);
   });
 
-  it('should grab all traces if not reducedLogPayload', () => {
+  it('should grab traces until max size exceeded', () => {
     const trace1 = { message: 'trace1' };
     const trace2 = { message: 'trace2' };
     const trace3 = { message: 'trace3' };
     logger['logBuffer'] = [trace1, trace2, trace3] as any;
 
-    logger['reduceLogPayload'] = true;
-    const spy = logger['getReducedLogPayload'] = jest.fn().mockReturnValue([trace1]);
+    jest.spyOn(utils, 'calculateLogMessageSize')
+      .mockReturnValueOnce(100)
+      .mockReturnValueOnce(100)
+      .mockReturnValueOnce(10022222);
 
     const payload = logger['getLogPayload']();
 
-    expect(payload).toEqual([trace1]);
-    expect(spy).toHaveBeenCalled();
+    expect(payload).toEqual([trace1, trace2]);
+    expect(logger['logBuffer'].length).toBe(1);
+  });
+
+  it('should not get items too big', () => {
+    const trace1 = { message: 'trace1' };
+    const trace2 = { message: 'trace2' };
+    const trace3 = { message: 'trace3' };
+    logger['logBuffer'] = [trace1, trace2, trace3] as any;
+
+    jest.spyOn(utils, 'calculateLogMessageSize')
+      .mockReturnValueOnce(1002222)
+      .mockReturnValueOnce(100)
+      .mockReturnValueOnce(105455540);
+
+    const payload = logger['getLogPayload']();
+
+    expect(payload).toEqual([trace2]);
+    expect(logger['logBuffer'].length).toBe(1);
   });
 });
 
-describe('getReducedLogPayload', () => {
-  let logger: Logger;
-  let trace1: any;
-  let trace2: any;
-  let trace3: any;
-  let trace4: any;
-
-  beforeEach(() => {
-    logger = new Logger();
-    trace1 = { message: 'trace1' };
-    trace2 = { message: 'trace2' };
-    trace3 = { message: 'trace3' };
-    trace4 = { message: 'trace4' };
-    logger['logBuffer'] = [trace1, trace2, trace3, trace4] as any;
-  });
-
-  it('should take half of the buffer', () => {
-    const traces = logger['getReducedLogPayload'](1);
-
-    expect(traces).toEqual([trace1, trace2]);
-    expect(logger['logBuffer']).toEqual([trace3, trace4]);
-  });
-
-  it('should take a quarter of the buffer', () => {
-    const traces = logger['getReducedLogPayload'](2);
-
-    expect(traces).toEqual([trace1]);
-    expect(logger['logBuffer']).toEqual([trace2, trace3, trace4]);
-  });
-
-  it('should get at least one message', () => {
-    logger['logBuffer'] = [trace1] as any;
-    const traces = logger['getReducedLogPayload'](4);
-
-    expect(traces).toEqual([trace1]);
-  });
-});
-
-describe('resetbackoffFlags', () => {
+describe('reset', () => {
   it('should reset stuff', () => {
     const logger = new Logger();
-    logger['backoffActive'] = true;
+    logger['logRequestPending'] = true;
     logger['failedLogAttempts'] = 5;
-    logger['reduceLogPayload'] = true;
 
-    logger['resetBackoffFlags']();
+    logger['reset']();
 
-    expect(logger['backoffActive']).toBeFalsy();
+    expect(logger['logRequestPending']).toBeFalsy();
     expect(logger['failedLogAttempts']).toBeFalsy();
-    expect(logger['reduceLogPayload']).toBeFalsy();
   });
 });
 
-describe('buildUri', () => {
-  let logger: Logger;
-
-  beforeEach(() => {
-    logger = new Logger();
-    logger['opts'] = {
-      environment: 'myEnv'
-    } as any;
-  });
-
-  it('should use default version', () => {
-    expect(logger['buildUri']('myPath')).toEqual('https://api.myEnv/api/v2/myPath');
-  });
-
-  it('should use provided version', () => {
-    expect(logger['buildUri']('myPath', 'v4')).toEqual('https://api.myEnv/api/v4/myPath');
-  });
-});
-
-describe('requestApi', () => {
-  let logger: Logger;
-
-  beforeEach(() => {
-    logger = new Logger();
-    logger['opts'] = {
-      accessToken: 'mytoken'
-    } as any;
-  });
-
-  afterEach(() => jest.restoreAllMocks());
-
-  it('should use default method', async () => {
-    const mockRequest = { set: jest.fn(), type: jest.fn(), send: jest.fn() }
-    jest.spyOn(superagent, 'get').mockReturnValue(mockRequest as any);
-    await logger['requestApi']('testPath');
-    expect(mockRequest.set).toHaveBeenCalledWith('Authorization', 'Bearer mytoken');
-    expect(mockRequest.type).toHaveBeenCalledWith('json');
-    expect(mockRequest.send).toHaveBeenCalledWith(undefined);
-  });
-
-  it('should use provided method', async () => {
-    const mockRequest = { set: jest.fn(), type: jest.fn(), send: jest.fn() }
-    jest.spyOn(superagent, 'post').mockReturnValue(mockRequest as any);
-    const myData = { message: 'here' };
-    await logger['requestApi']('testPath', { method: 'post', data: myData });
-    expect(mockRequest.set).toHaveBeenCalledWith('Authorization', 'Bearer mytoken');
-    expect(mockRequest.type).toHaveBeenCalledWith('json');
-    expect(mockRequest.send).toHaveBeenCalledWith(myData);
-  });
-
-  it('should use provided contentType', async () => {
-    const mockRequest = { set: jest.fn(), type: jest.fn(), send: jest.fn() }
-    jest.spyOn(superagent, 'post').mockReturnValue(mockRequest as any);
-    const myData = { message: 'here' };
-    await logger['requestApi']('testPath', { method: 'post', data: myData, contentType: 'text' });
-    expect(mockRequest.set).toHaveBeenCalledWith('Authorization', 'Bearer mytoken');
-    expect(mockRequest.type).toHaveBeenCalledWith('text');
-    expect(mockRequest.send).toHaveBeenCalledWith(myData);
-  });
-});

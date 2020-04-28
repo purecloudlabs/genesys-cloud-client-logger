@@ -6,8 +6,27 @@ export interface IServerOpts {
   appVersion: string,   // version of app using the logging library
   logTopic: string,     // all local logs will be prefixed by this
   logLevel: LogLevels,  // logs at this level or high get sent to the server
-  backoffOpts?: IBackoffOpts,
   uploadDebounceTime?: number,   // time to debounce logs uploads to the server
+}
+
+export interface IDeferred {
+  promise: Promise<any>;
+  reject: any;
+  resolve: any;
+}
+
+export interface ISendLogState {
+  deferred: IDeferred;
+  request: ISendLogRequest;
+}
+
+export interface ISendLogRequest {
+  accessToken: string;
+  app: {
+    appId: string;
+    appVersion: string;
+  };
+  traces: ITrace[];
 }
 
 export interface ITrace {
@@ -17,11 +36,12 @@ export interface ITrace {
 }
 
 export interface RequestApiOptions {
+  accessToken?: string;
   method?: string;
   data?: any;
-  version?: string;
+  apiVersion?: string;
+  environment: string;
   contentType?: string;
-  auth?: string | boolean;
 }
 
 export enum LogLevels {
