@@ -9,7 +9,7 @@ module.exports = (env) => {
 
   return {
     target: 'web',
-    entry: './src/logger.ts',
+    entry: './src/index.ts',
     mode,
     optimization: {
       minimize
