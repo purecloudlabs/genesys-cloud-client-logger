@@ -1,6 +1,6 @@
 {
   "name": "genesys-cloud-client-logger",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Common logger for genesys cloud client application to upload logs server",
   "main": "dist/genesys-cloud-client-logger.min.js",
   "browser": "dist/genesys-cloud-client-logger.min.js",
@@ -8,8 +8,9 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "build": "tsc -p . && webpack --env.production",
-    "build:dev": "tsc -p . && webpack",
+    "clean": "rimraf dist",
+    "build": "npm run clean && tsc -p . && webpack --env.production",
+    "build:dev": "npm run clean && tsc -p . && webpack",
     "lint": "tslint --project . --config tslint.json",
     "test": "jest --collectCoverage",
     "test:watch": "jest --watch --collectCoverage=false --runInBand"
@@ -33,6 +34,7 @@
     "babel-loader": "^8.1.0",
     "jest": "^25.4.0",
     "pre-push": "^0.1.1",
+    "rimraf": "^3.0.2",
     "ts-jest": "^25.4.0",
     "ts-loader": "^7.0.1",
     "tslint": "^6.1.1",

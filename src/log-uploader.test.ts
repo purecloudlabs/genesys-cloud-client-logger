@@ -45,9 +45,6 @@ describe('backoff events', () => {
     (backoff as any).triggerEvent('backoff');
 
     expect(spy).toHaveBeenCalled();
-
-    const active = logUploader['hasPendingRequest'];
-    expect(active).toBeTruthy();
   });
 
   it('should handle the ready event', () => {

@@ -32,7 +32,6 @@ export class LogUploader {
     this.backoff.failAfter(20);
 
     this.backoff.on('backoff', () => {
-      this.hasPendingRequest = true;
       this.uploadLogsToServer();
     });
 
