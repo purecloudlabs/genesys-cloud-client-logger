@@ -99,6 +99,7 @@ export class Logger {
 
     if (
       skipServer ||
+      !this.isInitialized ||
       LOG_LEVELS.indexOf(level) < LOG_LEVELS.indexOf(this.opts.logLevel.toString())
     ) {
       return;
