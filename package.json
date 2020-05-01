@@ -1,6 +1,6 @@
 {
   "name": "genesys-cloud-client-logger",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Common logger for genesys cloud client application to upload logs server",
   "main": "dist/genesys-cloud-client-logger.min.js",
   "browser": "dist/genesys-cloud-client-logger.min.js",
@@ -48,6 +48,6 @@
     "backoff-web": "^1.0.1",
     "safe-json-stringify": "^1.2.0",
     "superagent": "^5.2.2",
-    "uuid": "^7.0.3"
+    "uuid": "^3.4.0"
   }
 }

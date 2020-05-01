@@ -6,3 +6,4 @@ node_modules
 .history/*
 dist
 coverage/
+genesys-cloud-client-logger*.tgz

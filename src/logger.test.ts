@@ -169,7 +169,7 @@ describe('processLog', () => {
     logger = new Logger();
 
     processLog = logger['processLog'].bind(logger);
-  })
+  });
 
   afterEach(() => jest.restoreAllMocks());
 
@@ -181,7 +181,7 @@ describe('processLog', () => {
     processLog(null as any, error, null, true);
 
     expect(spy).toHaveBeenCalledWith(message, error);
-  })
+  });
 
   it('should get message from Error', () => {
     const spy = console['info'] = jest.fn();
@@ -226,7 +226,16 @@ describe('processLog', () => {
         logTopic: 'testTopic',
         logLevel: LogLevels.info
       } as any;
+
+      logger['isInitialized'] = true;
       calculateLogMessageSize = jest.spyOn(utils, 'calculateLogMessageSize') as any;
+    });
+
+    it('should not send to server if not initialized', () => {
+      logger['isInitialized'] = false;
+      processLog(LogLevels.error, 'fake message', null);
+
+      expect(notifyLogs).not.toHaveBeenCalled();
     });
 
     it('should not send if below logLevel', () => {
