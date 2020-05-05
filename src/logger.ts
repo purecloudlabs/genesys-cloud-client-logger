@@ -203,6 +203,10 @@ export class Logger {
     }
   }
   private getLogPayload (): ITrace[] {
+    if (!this.logBuffer.length) {
+      return [];
+    }
+
     const maxPayloadSize = MAX_LOG_SIZE / (this.failedLogAttempts + 1);
 
     let currentSize = 0;

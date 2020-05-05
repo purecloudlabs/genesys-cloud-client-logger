@@ -474,6 +474,15 @@ describe('getLogPayload', () => {
     logger = new Logger();
   });
 
+  it('should not recurse if no logs to send', () => {
+    // @ts-ignore
+    const spy = jest.spyOn(logger, 'getLogPayload');
+    logger['logBuffer'] = [] as any;
+    const payload = logger['getLogPayload']();
+    expect(payload).toEqual([]);
+    expect(spy).toHaveBeenCalledTimes(1);
+  });
+
   it('should grab all traces', () => {
     const trace1 = { message: 'trace1' };
     const trace2 = { message: 'trace2' };
