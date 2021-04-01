@@ -1,6 +1,7 @@
-import { LogLevels, ITrace, RequestApiOptions, IServerOpts, ISendLogRequest } from './interfaces';
 import { v4 } from 'uuid';
 import stringify from 'safe-json-stringify';
+
+import { LogLevels, ITrace, IServerOpts, ISendLogRequest } from './interfaces';
 import { calculateLogMessageSize, calculateLogBufferSize } from './utils';
 import uploader from './log-uploader';
 
@@ -142,7 +143,7 @@ export class Logger {
       if (!this.logRequestPending) {
         return this.tryToSendLogs();
       } else {
-        this.info('Tried to send logs immeidately but a send request is already pending. Waiting for pending request to finish', null, true);
+        this.info('Tried to send logs immediately but a send request is already pending. Waiting for pending request to finish', null, true);
       }
     }
     this.sendLogTimer = setTimeout(this.tryToSendLogs.bind(this), this.opts.uploadDebounceTime);
@@ -202,6 +203,7 @@ export class Logger {
       this.logBufferSize = calculateLogBufferSize(this.logBuffer);
     }
   }
+
   private getLogPayload (): ITrace[] {
     if (!this.logBuffer.length) {
       return [];

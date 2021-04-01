@@ -1,8 +1,10 @@
 /* tslint:disable:no-string-literal */
+import { Backoff } from 'backoff-web';
+
 import * as utils from './utils';
 import { LogUploader } from './log-uploader';
-import { ISendLogRequest, ISendLogState } from './interfaces';
-import { Backoff } from 'backoff-web';
+import { ISendLogState } from './interfaces';
+
 jest.mock('backoff-web');
 
 let logUploader: LogUploader;
@@ -73,7 +75,7 @@ describe('sendLogs', () => {
         appId: 'asdf',
         appVersion: '1.1.1'
       },
-      traces: [ {} as any ]
+      traces: [{} as any]
     }).then(() => {
       spy();
     });
@@ -112,7 +114,7 @@ describe('uploadLogsToServer', () => {
           appId: 'asdf',
           appVersion: '1.1.1'
         },
-        traces: [ {} as any ]
+        traces: [{} as any]
       },
       deferred: { promise: jest.fn(), resolve: jest.fn(), reject: jest.fn() },
     } as any;
@@ -152,7 +154,7 @@ describe('uploadLogsToServer', () => {
           appId: 'asdf',
           appVersion: '1.1.1'
         },
-        traces: [ {} as any ]
+        traces: [{} as any]
       },
       deferred: { promise: jest.fn(), resolve: jest.fn(), reject: jest.fn() },
     } as any;
@@ -183,7 +185,7 @@ describe('uploadLogsToServer', () => {
           appId: 'asdf',
           appVersion: '1.1.1'
         },
-        traces: [ {} as any ]
+        traces: [{} as any]
       },
       deferred: { promise: jest.fn(), resolve: jest.fn(), reject: jest.fn() },
     } as any;
@@ -216,7 +218,7 @@ describe('uploadLogsToServer', () => {
           appId: 'asdf',
           appVersion: '1.1.1'
         },
-        traces: [ {} as any ]
+        traces: [{} as any]
       },
       deferred: { promise: jest.fn(), resolve: jest.fn(), reject: jest.fn() },
     } as any;

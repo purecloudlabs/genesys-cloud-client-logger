@@ -1,5 +1,3 @@
-import { IBackoffOpts } from 'backoff-web';
-
 export interface IServerOpts {
   accessToken: string,  // genesyscloud auth token
   environment: string,  // genesyscloud api environment
