@@ -1,11 +1,60 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 
 <head>
-  <meta http-equiv="Refresh" content="0; url=https://localhost:8443/test-page/">
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GC Logger Local Test Page</title>
 </head>
 
 <body>
-  Redirecting...
+
+  <script src="dist/genesys-cloud-client-logger.js"></script>
+  <script>
+    const accessToken = 'INSTER_TOKEN_HERE';
+
+    window.logger = new GenesysCloudClientLogger({
+      accessToken,
+      url: 'https://api.inindca.com/api/v2/diagnostics/trace',
+      appVersion: '2.0.0',
+      logTopic: `gc-client-logger-testing`,
+      logLevel: 'info',
+      uploadDebounceTime: 2500
+    });
+
+
+    fetch('https://api.inindca.com/api/v2/tokens/me', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      },
+      method: 'get'
+    })
+      .then(d => d.json())
+      .then(d => console.log('response', d))
+      .then(() => {
+        logger.info('Logger initialized');
+      });
+  </script>
+
+
+  <script>
+    var count = 1;
+    async function postABunchOfLogs(num = 55) {
+      if (!window.devices) {
+        window.devices = await window.navigator.mediaDevices.enumerateDevices();
+      }
+      const c = count++;
+      for (let i = 0; i < num; i++) {
+        logger.info(`Devices log [${c}]`, devices);
+      }
+    }
+
+    postABunchOfLogs();
+    postABunchOfLogs(6);
+
+  </script>
+
 </body>
 
 </html>
