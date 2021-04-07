@@ -12,7 +12,7 @@
 
   <script src="dist/genesys-cloud-client-logger.js"></script>
   <script>
-    const accessToken = 'INSTER_TOKEN_HERE';
+    const accessToken = 'INSERT_TOKEN_HERE';
 
     window.logger = new GenesysCloudClientLogger({
       accessToken,
@@ -20,7 +20,8 @@
       appVersion: '2.0.0',
       logTopic: `gc-client-logger-testing`,
       logLevel: 'info',
-      uploadDebounceTime: 2500
+      uploadDebounceTime: 4000,
+      debugMode: true
     });
 
 
@@ -30,27 +31,37 @@
       },
       method: 'get'
     })
-      .then(d => d.json())
-      .then(d => console.log('response', d))
+      .then(d => console.log('response', d) && d.json())
+      .then(() => {
+        if (!window.devices) {
+          return window.navigator.mediaDevices.enumerateDevices(devices => window.devices = devices);
+        }
+      })
       .then(() => {
         logger.info('Logger initialized');
       });
+
   </script>
 
 
   <script>
-    var count = 1;
+    let count = 1;
+    const ipsum = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut ac est at velit venenatis egestas at ac est. Cras quis gravida mauris. Fusce efficitur varius urna vel porttitor. Duis velit ante, semper a fermentum aliquet, elementum at turpis. Suspendisse mattis venenatis condimentum. Nam elementum purus sed augue tincidunt, tincidunt egestas dolor vehicula. Interdum et malesuada fames ac ante ipsum primis in faucibus. Quisque eleifend aliquet erat, bibendum tempus mauris tincidunt non. Vestibulum enim turpis, rhoncus vitae tristique in, pellentesque at justo. Fusce quis tellus dapibus, venenatis purus vel, tempus orci. Donec vel ullamcorper neque. Phasellus eleifend sed quam id convallis. Nunc in hendrerit sapien. Ut rhoncus aliquam arcu. Interdum et malesuada fames ac ante ipsum primis in faucibus. Nullam lacinia tellus at quam sagittis vestibulum. Sed vestibulum libero id mi gravida vulputate. In sed faucibus massa. In et est tincidunt, semper sapien nec, viverra nec.';
     async function postABunchOfLogs(num = 55) {
-      if (!window.devices) {
-        window.devices = await window.navigator.mediaDevices.enumerateDevices();
-      }
+      const even = (num % 2) === 0;
+
       const c = count++;
+
       for (let i = 0; i < num; i++) {
-        logger.info(`Devices log [${c}]`, devices);
+        if (even) {
+          logger.info(`Lorum Ipsom [${c}#${i}]`, ipsum);
+        } else {
+          logger.info(`Devices log [${c}#${i}]`, window.devices);
+        }
       }
     }
 
-    postABunchOfLogs();
+    postABunchOfLogs(7);
     postABunchOfLogs(6);
 
   </script>

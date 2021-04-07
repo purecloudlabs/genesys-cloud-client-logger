@@ -13,14 +13,14 @@ export interface ILoggerConfig {
   /** initialize server logging. defaults to `true` */
   initializeServerLogging?: boolean;
   /** logs at this level or high get sent to the server. defaults to 'info' */
-  logLevel?: ConfigLogLevel;
+  logLevel?: LogLevel;
   /** time to debounce logs uploads to the server */
   uploadDebounceTime?: number;
+  /** debug logger events */
+  debugMode?: boolean;
 }
 
 export type LogLevel = 'log' | 'debug' | 'info' | 'warn' | 'error';
-
-export type ConfigLogLevel = LogLevel | 'none';
 
 export interface ITrace {
   topic: string;
@@ -32,7 +32,7 @@ export interface ILogMessage {
   clientTime: string;
   clientId: string;
   message: string;
-  details?: IDetail | IDetail[];
+  details?: any
 }
 
 export interface ILogBufferItem {
@@ -40,47 +40,17 @@ export interface ILogBufferItem {
   traces: ITrace[];
 }
 
-export interface IDetailObject {
-  [k: string]: IDetailObject | string | number | boolean | undefined | null;
-  [k: number]: IDetailObject | string | number | boolean | undefined | null;
-};
+export interface IDeferred<T = any> {
+  promise: Promise<T>;
+  reject: (rejectedValue: any) => void;
+  resolve: (resolvedValue: T) => void;
+}
 
-export type IDetail =
-  | Error
-  | string
-  | boolean
-  | number
-  | IDetailObject
-  | undefined
-  | null
-  | Event;
-
-// TODO: delete this
-const log = (message: string, details: IDetail | IDetail[]) => console.log(message, details);
-
-// INTERFACES (can be fussy)
-interface MyInterface { }
-const myInterface: MyInterface = {};
-log('interface', { ...myInterface }); // Works
-log('interface', { myInterface }); // TS error
-log('interface', myInterface); // TS error
-
-// TYPES (work better)
-type MyType = {};
-const myType: MyType = {};
-log('type', myType); // Works
-log('type', { myType }); // Works
-log('type', { ...myType }); // Works
-
-// POJO
-const pojo = {};
-log('pojo', pojo); // Works
-log('pojo', { pojo }); // Works
-log('pojo', { ...pojo }); // Works
-
-// ARRAY
-const arr: any[] = [];
-log('array', [...arr]); // Works
-log('array', [arr]); // TS error
-log('array', ...arr); // TS error
-log('array', arr); // Works
+export interface ISendLogRequest {
+  accessToken: string;
+  app: {
+    appId: string;
+    appVersion: string;
+  };
+  traces: ITrace[];
+}

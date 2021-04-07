@@ -1,11 +1,11 @@
 import { v4 } from 'uuid';
 
-import { ILoggerConfig, LogLevel, IDetail, ConfigLogLevel } from './interfaces';
+import { ILoggerConfig, LogLevel } from './interfaces';
 import { ServerLogger } from './server-logger';
 
 export class Logger {
   declare readonly clientId: string;
-  private config: ILoggerConfig;
+  config: ILoggerConfig;
   private serverLogger!: ServerLogger;
   private serverLoggingOn: boolean = false;
 
@@ -26,35 +26,39 @@ export class Logger {
 
     /* default to always set up server logging */
     if (this.config.initializeServerLogging !== false) {
-      this.serverLogger = new ServerLogger(config, this);
+      this.serverLogger = new ServerLogger(this);
       this.serverLoggingOn = true;
     }
   }
 
-  log (message: string | Error, details: IDetail | IDetail[], skipServer: boolean = false): void {
+  setAccessToken (token: string): void {
+    this.config.accessToken = token;
+  }
+
+  log (message: string | Error, details?: any, skipServer: boolean = false): void {
     this.logMessage('log', message, details, skipServer);
   }
 
-  debug (message: string | Error, details: IDetail | IDetail[], skipServer: boolean = false): void {
+  debug (message: string | Error, details?: any, skipServer: boolean = false): void {
     this.logMessage('debug', message, details, skipServer);
   }
 
-  info (message: string | Error, details: IDetail | IDetail[], skipServer: boolean = false): void {
+  info (message: string | Error, details?: any, skipServer: boolean = false): void {
     this.logMessage('info', message, details, skipServer);
   }
 
-  warn (message: string | Error, details: IDetail | IDetail[], skipServer: boolean = false): void {
+  warn (message: string | Error, details?: any, skipServer: boolean = false): void {
     this.logMessage('warn', message, details, skipServer);
   }
 
-  error (message: string | Error, details: IDetail | IDetail[], skipServer: boolean = false): void {
+  error (message: string | Error, details?: any, skipServer: boolean = false): void {
     this.logMessage('error', message, details, skipServer);
   }
 
   private logMessage = (
     logLevel: LogLevel,
     message: string | Error,
-    details: IDetail | IDetail[],
+    details: any,
     skipServer: boolean
   ): void => {
     if (message instanceof Error) {
@@ -78,7 +82,7 @@ export class Logger {
     }
   };
 
-  private logRank (level: ConfigLogLevel | undefined): number {
+  private logRank (level: LogLevel | undefined): number {
     switch (level) {
       case 'log':
         return 0;
@@ -90,8 +94,6 @@ export class Logger {
         return 3;
       case 'error':
         return 4;
-      case 'none':
-        return 5;
       default:
         return -1; // for invalid logLevel
     }
