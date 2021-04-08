@@ -1,6 +1,6 @@
 {
   "name": "genesys-cloud-client-logger",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Common logger for genesys cloud client application to upload logs server",
   "main": "dist/genesys-cloud-client-logger.min.js",
   "browser": "dist/genesys-cloud-client-logger.min.js",

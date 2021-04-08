@@ -93,6 +93,10 @@ export class Logger {
       message = message.message;
     }
 
+    if (!(typeof details === "string" || details instanceof String)) {
+        details = JSON.stringify(details);
+    }
+
     // immediately log it locally
     const prefix = this.opts?.logTopic ? `[${this.opts.logTopic}] ` : '';
     console[level](`${prefix}${message}`, details);
