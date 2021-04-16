@@ -1,8 +1,8 @@
-@Library('pipeline-library@webapp-pipelines') _
+@Library('pipeline-library') _
 
 webappPipeline {
-    slaveLabel = 'dev'
-    nodeVersion = '10.16.2'
+    slaveLabel = 'dev_v2'
+    nodeVersion = '14.8.0'
     useArtifactoryRepo = false
     projectName = 'genesys-cloud-client-logger'
     manifest = directoryManifest('dist')
@@ -10,7 +10,7 @@ webappPipeline {
     publishPackage = { 'prod' }
 
     buildStep = {
-        sh('npm i && npm test && npm run build')
+        sh('npm ci && npm test && npm run build')
     }
 
     cmConfig = {
@@ -20,14 +20,5 @@ webappPipeline {
         ]
     }
 
-    shouldTagOnRelease = { false }
-
-    postReleaseStep = {
-        sshagent(credentials: [constants.credentials.github.inin_dev_evangelists]) {
-            sh("""
-                git tag v${version}
-                git push origin --tags
-            """)
-        }
-    }
+    shouldTagOnRelease = { true }
 }

@@ -1,23 +1,51 @@
-import { IBackoffOpts } from 'backoff-web';
-
-export interface IServerOpts {
-  accessToken: string,  // genesyscloud auth token
-  environment: string,  // genesyscloud api environment
-  appVersion: string,   // version of app using the logging library
-  logTopic: string,     // all local logs will be prefixed by this
-  logLevel: LogLevels,  // logs at this level or high get sent to the server
-  uploadDebounceTime?: number,   // time to debounce logs uploads to the server
+export interface ILoggerConfig {
+  /** JWT access token to use in HTTP request */
+  accessToken: string;
+  /**
+   * url to send the logs to (note this needs to be the full URL)
+   * an HTTP `POST` request will be issued to this url
+   */
+  url: string;
+  /** version of app using the logging library */
+  appVersion: string;
+  /** all local logs will be prefixed by this. */
+  logTopic: string;
+  /** initialize server logging. defaults to `true` */
+  initializeServerLogging?: boolean;
+  /** logs at this level or high get sent to the server. defaults to 'info' */
+  logLevel?: LogLevel;
+  /** time to debounce logs uploads to the server. defaults to 4000 */
+  uploadDebounceTime?: number;
+  /** debug logger events. defaults to `false` */
+  debugMode?: boolean;
+  /** stringify log details when writing to console. defaults to `false` */
+  stringify?: boolean;
 }
 
-export interface IDeferred {
-  promise: Promise<any>;
-  reject: any;
-  resolve: any;
+export type LogLevel = 'log' | 'debug' | 'info' | 'warn' | 'error';
+
+export interface ITrace {
+  topic: string;
+  level: string;
+  message: string;
 }
 
-export interface ISendLogState {
-  deferred: IDeferred;
-  request: ISendLogRequest;
+export interface ILogMessage {
+  clientTime: string;
+  clientId: string;
+  message: string;
+  details?: any
+}
+
+export interface ILogBufferItem {
+  size: number;
+  traces: ITrace[];
+}
+
+export interface IDeferred<T = any> {
+  promise: Promise<T>;
+  reject: (rejectedValue: any) => void;
+  resolve: (resolvedValue: T) => void;
 }
 
 export interface ISendLogRequest {
@@ -27,27 +55,4 @@ export interface ISendLogRequest {
     appVersion: string;
   };
   traces: ITrace[];
-}
-
-export interface ITrace {
-  topic: string;
-  level: string;
-  message: string;
-}
-
-export interface RequestApiOptions {
-  accessToken?: string;
-  method?: string;
-  data?: any;
-  apiVersion?: string;
-  environment: string;
-  contentType?: string;
-}
-
-export enum LogLevels {
-  log = 'log',
-  debug = 'debug',
-  info = 'info',
-  warn = 'warn',
-  error = 'error'
 }

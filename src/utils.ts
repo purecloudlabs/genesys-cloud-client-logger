@@ -1,8 +1,7 @@
-import request from 'superagent';
-import { ITrace, RequestApiOptions } from './interfaces';
+import { IDeferred } from "./interfaces";
 
-export const calculateLogBufferSize = function (arr: ITrace[]): number {
-  return arr.reduce((size: number, trace: ITrace) => size + calculateLogMessageSize(trace), 0);
+export const calculateLogBufferSize = function (arr: any[]): number {
+  return arr.reduce((size: number, trace: any) => size + calculateLogMessageSize(trace), 0);
 };
 
 export const calculateLogMessageSize = function (trace: any): number {
@@ -13,18 +12,14 @@ export const calculateLogMessageSize = function (trace: any): number {
   return str.length + (m ? m.length : 0);
 };
 
-export const requestApi = function (path: string, reqOpts: RequestApiOptions): Promise<any> {
-  const req = (request as any)[reqOpts.method || 'get'](buildUri(path, reqOpts.environment, reqOpts.apiVersion));
-  if (reqOpts.accessToken) {
-    req.set('Authorization', `Bearer ${reqOpts.accessToken}`);
-  }
-  req.type(reqOpts.contentType || 'json');
+export const getDeferred = (): IDeferred => {
+  let res: any;
+  let rej: any;
 
-  return req.send(reqOpts.data);
-};
+  const promise = new Promise((resolve, reject) => {
+    res = resolve;
+    rej = reject;
+  });
 
-const buildUri = function (path: string, environment: string, version: string = 'v2'): string {
-  path = path.replace(/^\/+|\/+$/g, ''); // trim leading/trailing /
-  return `https://api.${environment}/api/${version}/${path}`;
-};
-
+  return { promise, resolve: res, reject: rej };
+}

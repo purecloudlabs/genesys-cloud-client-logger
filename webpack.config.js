@@ -9,7 +9,7 @@ module.exports = (env) => {
 
   return {
     target: 'web',
-    entry: './src/main.ts',
+    entry: './src/index.ts',
     mode,
     optimization: {
       minimize
@@ -19,7 +19,8 @@ module.exports = (env) => {
       path: path.resolve(__dirname, 'dist'),
       filename,
       library: 'GenesysCloudClientLogger',
-      libraryTarget: 'umd'
+      libraryTarget: 'umd',
+      libraryExport: 'default'
     },
     resolve: {
       extensions: ['.ts', '.js', '.json']
