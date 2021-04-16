@@ -1,7 +1,7 @@
 import nock from 'nock';
 
 import { getOrCreateLogUploader, LogUploader } from '../src/log-uploader';
-import { ISendLogRequest } from '../old-src/interfaces';
+import { ISendLogRequest } from '../src/interfaces';
 
 describe('getOrCreateLogUploader()', () => {
   it('should return unique log-uploaders for different urls', () => {
