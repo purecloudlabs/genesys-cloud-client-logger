@@ -6,14 +6,13 @@ import { LogLevel, ITrace, ILogBufferItem, ILogMessage, ISendLogRequest } from '
 import { calculateLogMessageSize } from './utils';
 import { getOrCreateLogUploader, LogUploader } from './log-uploader';
 
-const MAX_LOG_SIZE = 3000;
-// const MAX_LOG_SIZE = 14500;
+const MAX_LOG_SIZE = 14500;
 const DEFAULT_UPLOAD_DEBOUNCE = 4000;
 
 export class ServerLogger {
   private isInitialized: boolean = false;
   private logger: Logger;
-  private logBuffer: Array<ILogBufferItem> = [];
+  private logBuffer: ILogBufferItem[] = [];
   private debounceLogUploadTime: number;
   private debounceTimer: any = null;
   private logUploader: LogUploader;
@@ -44,7 +43,7 @@ export class ServerLogger {
       return;
     }
 
-    let logMessage = this.convertToLogMessage(message, details);
+    const logMessage = this.convertToLogMessage(message, details);
     let trace = this.convertToTrace(logLevel, logMessage);
     let traceMessageSize = calculateLogMessageSize(trace);
 
@@ -160,9 +159,12 @@ export class ServerLogger {
   }
 
   private sendAllLogsInstantly () {
-    return this.logBuffer.forEach((item: ILogBufferItem) => {
+    this.logBuffer.forEach((item: ILogBufferItem) => {
       this.logUploader.postLogsToEndpointInstantly(this.convertToRequestParams(item.traces.reverse()));
     });
+
+    /* this will send any queued up requests */
+    return this.logUploader.sendEntireQueue();
   }
 
   private truncateLog (logLevel: LogLevel, log: ILogMessage): ITrace | null {
@@ -241,6 +243,7 @@ export class ServerLogger {
       return;
     }
 
+    /* tslint:disable-next-line:no-console */
     console.log(`%c [DEBUG:${this.logger.config.logTopic}] ${message}`, 'color: #32a852', cloneDeep(details));
   }
 }

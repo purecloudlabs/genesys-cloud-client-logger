@@ -14,10 +14,12 @@ export interface ILoggerConfig {
   initializeServerLogging?: boolean;
   /** logs at this level or high get sent to the server. defaults to 'info' */
   logLevel?: LogLevel;
-  /** time to debounce logs uploads to the server */
+  /** time to debounce logs uploads to the server. defaults to 4000 */
   uploadDebounceTime?: number;
-  /** debug logger events */
+  /** debug logger events. defaults to `false` */
   debugMode?: boolean;
+  /** stringify log details when writing to console. defaults to `false` */
+  stringify?: boolean;
 }
 
 export type LogLevel = 'log' | 'debug' | 'info' | 'warn' | 'error';

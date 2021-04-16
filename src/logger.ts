@@ -1,4 +1,5 @@
 import { v4 } from 'uuid';
+import stringify from 'safe-json-stringify';
 
 import { ILoggerConfig, LogLevel } from './interfaces';
 import { ServerLogger } from './server-logger';
@@ -7,7 +8,6 @@ export class Logger {
   declare readonly clientId: string;
   config: ILoggerConfig;
   private serverLogger!: ServerLogger;
-  private serverLoggingOn: boolean = false;
 
   constructor (config: ILoggerConfig) {
     Object.defineProperty(this, 'clientId', {
@@ -27,7 +27,6 @@ export class Logger {
     /* default to always set up server logging */
     if (this.config.initializeServerLogging !== false) {
       this.serverLogger = new ServerLogger(this);
-      this.serverLoggingOn = true;
     }
   }
 
@@ -70,12 +69,16 @@ export class Logger {
     message = `${prefix}${message}`;
 
     /* log locally */
-    console[logLevel](message, details);
+    if (this.config?.stringify) {
+      console[logLevel](message, stringify(details));
+    } else {
+      console[logLevel](message, details);
+    }
 
     /* log to the server */
     if (
       !skipServer &&
-      this.serverLoggingOn &&
+      this.serverLogger &&
       this.logRank(logLevel) >= this.logRank(this.config.logLevel)
     ) {
       this.serverLogger.addLogToSend(logLevel, message, details);

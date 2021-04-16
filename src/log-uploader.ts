@@ -1,22 +1,16 @@
 import request from 'superagent';
 import { backOff } from 'exponential-backoff';
-
-import { IDeferred, ISendLogRequest } from './interfaces';
 import cloneDeep from 'lodash.clonedeep';
 
-const logUploaderMap = new Map<string, LogUploader>();
+import { IDeferred, ISendLogRequest } from './interfaces';
+import { getDeferred } from './utils';
 
-function getDeferred (): IDeferred {
-  let res: any;
-  let rej: any;
-
-  const promise = new Promise((resolve, reject) => {
-    res = resolve;
-    rej = reject;
-  });
-
-  return { promise, resolve: res, reject: rej };
+interface IQueueItem {
+  deferred: IDeferred;
+  requestParams: ISendLogRequest;
 }
+
+const logUploaderMap = new Map<string, LogUploader>();
 
 export const getOrCreateLogUploader = (url: string, debugMode: boolean = false): LogUploader => {
   let uploader = logUploaderMap.get(url);
@@ -32,10 +26,7 @@ export const getOrCreateLogUploader = (url: string, debugMode: boolean = false):
 
 export class LogUploader {
   private hasPendingRequest = false;
-  private sendQueue: Array<{
-    deferred: IDeferred;
-    requestParams: ISendLogRequest;
-  }> = [];
+  private sendQueue: IQueueItem[] = [];
 
   constructor (private url: string, private debugMode: boolean = false) { }
 
@@ -57,22 +48,34 @@ export class LogUploader {
     return this.sendPostRequest(requestParams);
   }
 
+  sendEntireQueue () {
+    this.debug('sending all queued requests instantly to clear out sendQueue', {
+      sendQueue: this.sendQueue.map(i => i.requestParams)
+    });
+
+    let queueItem: IQueueItem | undefined;
+    /* tslint:disable-next-line:no-conditional-assignment */
+    while (queueItem = this.sendQueue.shift()) {
+      this.postLogsToEndpoint(queueItem.requestParams);
+    }
+  }
+
   private async sendNextQueuedLogToServer (): Promise<void> {
     if (this.hasPendingRequest || this.sendQueue.length === 0) {
       this.debug('sendNextQueuedLogToServer() but not sending request', {
         hasPendingRequest: this.hasPendingRequest,
         sendQueueLength: this.sendQueue.length
-      })
+      });
       return;
     }
 
     /* don't remove the item from the queue until it is not longer being sent (this includes retries) */
-    const queueItem = this.sendQueue[0];
+    const queueItem = this.sendQueue.shift() as IQueueItem; // `undefined` check happens above
 
     queueItem.deferred.promise.finally(() => {
-      /* remove the queued item that completed */
-      this.sendQueue.shift();
-      this.debug('queue item completed. removing from queue and resetting backoff', { queueItem, updatedSendQueue: this.sendQueue.map(i => i.requestParams) });
+      this.debug('queue item completed. removing from queue and resetting send queue', {
+        queueItemRequestParams: queueItem.requestParams, updatedSendQueue: this.sendQueue.map(i => i.requestParams)
+      });
 
       /* reset state and send the next item in the queue */
       this.hasPendingRequest = false;
@@ -80,7 +83,7 @@ export class LogUploader {
     });
 
     this.hasPendingRequest = true;
-    this.debug('sending logs to server', { queueItem: queueItem.requestParams, queue: this.sendQueue.map(i => i.requestParams) });
+    this.debug('sending logs to server', { queueItem: queueItem.requestParams, sendQueue: this.sendQueue.map(i => i.requestParams) });
 
     // return backOff(this.sendPostRequest.bind(this, queueItem.requestParams), {
     return backOff(() => this.sendPostRequest(queueItem.requestParams), {
@@ -94,11 +97,9 @@ export class LogUploader {
     })
       .then((response) => {
         this.debug('successfully sent logs to server', { requestParams: queueItem.requestParams, response });
-        this.hasPendingRequest = false;
         queueItem.deferred.resolve(response);
       })
       .catch((error) => {
-        this.hasPendingRequest = false;
         this.debug('ERROR sending logs to server', { requestParams: queueItem.requestParams, error });
         return queueItem.deferred.reject(error);
       });
@@ -114,6 +115,7 @@ export class LogUploader {
 
   private debug (message: string, details?: any): void {
     if (this.debugMode) {
+      /* tslint:disable-next-line:no-console */
       console.log(`%c [DEBUG:log-uploader] ${message}`, 'color: #32a0a8', cloneDeep(details));
     }
   }
