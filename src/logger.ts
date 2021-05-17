@@ -65,6 +65,11 @@ export class Logger {
       message = message.message;
     }
 
+    /* Stringify any json */
+    if (!(typeof details === "string" || details instanceof String)) {
+        details = JSON.stringify(details);
+    }
+
     const prefix = this.config?.logTopic ? `[${this.config.logTopic}] ` : '';
     message = `${prefix}${message}`;
 
