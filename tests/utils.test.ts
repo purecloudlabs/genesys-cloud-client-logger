@@ -30,28 +30,23 @@ describe('deepClone()', () => {
     const testItem = [1, 2, 3];
     const clonedTest = deepClone(testItem);
     expect(clonedTest).toStrictEqual(testItem);
-    expect(typeof clonedTest).toBe('object');
-    expect(Array.isArray(clonedTest)).toBeTruthy();
+    expect(clonedTest).not.toBe(testItem);
   });
   it('should clone a passed in item deeply; complex array', () => {
     const testItem = [1, "hello", [1, 2, 3], function() { console.log('hello')}, {test1: 1, test2: 2}];
     const clonedTest = deepClone(testItem);
     expect(clonedTest).toStrictEqual(testItem);
-    expect(typeof clonedTest).toBe('object');
-    expect(Array.isArray(clonedTest)).toBeTruthy();
-    expect(Array.isArray(clonedTest[2])).toBeTruthy();
-    expect(typeof clonedTest[3]).toBe('function');
-    expect(typeof clonedTest[4]).toBe('object');
-    expect(Object.keys(clonedTest[4]).length).toBe(2);
+    expect(clonedTest).not.toBe(testItem);
+    expect(clonedTest[2]).toStrictEqual(testItem[2]);
+    expect(clonedTest[2]).not.toBe(testItem[2]);
+    expect(clonedTest[4]).toStrictEqual(testItem[4]);
+    expect(clonedTest[4]).not.toBe(testItem[4]);
   });
   it('should clone a passed in item deeply; simple object', () => {
     const testItem = {test1: 1, test2: 2};
     const clonedTest = deepClone(testItem);
     expect(clonedTest).toStrictEqual(testItem);
-    expect(typeof clonedTest).toBe('object');
-    expect(Object.keys(clonedTest).length).toBe(2);
-    expect(clonedTest.test1).toBe(1);
-    expect(clonedTest.test2).toBe(2);
+    expect(clonedTest).not.toBe(testItem);
   });
   it('should clone a passed in item deeply; complex object', () => {
     const testItem = {
@@ -72,15 +67,11 @@ describe('deepClone()', () => {
     }
     const clonedTest = deepClone(testItem);
     expect(clonedTest).toStrictEqual(testItem);
-    expect(typeof clonedTest).toBe('object');
-    expect(Object.keys(clonedTest).length).toBe(5);
-    expect(typeof clonedTest.testObj).toBe('object');
-    expect(Object.keys(clonedTest.testObj).length).toBe(3);
-    expect(typeof clonedTest.testObj.testObj2).toBe('object');
-    expect(Object.keys(clonedTest.testObj.testObj2).length).toBe(2);
-    expect(typeof clonedTest.testFunc).toBe('function');
-    expect(typeof clonedTest.testArray).toBe('object');
-    expect(Array.isArray(clonedTest.testArray)).toBeTruthy();
+    expect(clonedTest).not.toBe(testItem);
+    expect(clonedTest.testObj).toStrictEqual(testItem.testObj);
+    expect(clonedTest.testArray).toStrictEqual(testItem.testArray);
+    expect(clonedTest.testObj).not.toBe(testItem.testObj);
+    expect(clonedTest.testArray).not.toBe(testItem.testArray);
   });
   it('should clone a passed in item deeply; function', () => {
     const testItem = function() {
