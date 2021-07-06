@@ -1,9 +1,8 @@
 import request from 'superagent';
 import { backOff } from 'exponential-backoff';
-import cloneDeep from 'lodash.clonedeep';
 
 import { IDeferred, ISendLogRequest } from './interfaces';
-import { getDeferred } from './utils';
+import { getDeferred, deepClone } from './utils';
 
 interface IQueueItem {
   deferred: IDeferred;
@@ -116,7 +115,7 @@ export class LogUploader {
   private debug (message: string, details?: any): void {
     if (this.debugMode) {
       /* tslint:disable-next-line:no-console */
-      console.log(`%c [DEBUG:log-uploader] ${message}`, 'color: #32a0a8', cloneDeep(details));
+      console.log(`%c [DEBUG:log-uploader] ${message}`, 'color: #32a0a8', deepClone(details));
     }
   }
 }
