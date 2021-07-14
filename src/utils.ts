@@ -23,3 +23,24 @@ export const getDeferred = (): IDeferred => {
 
   return { promise, resolve: res, reject: rej };
 }
+
+export const deepClone = (itemToBeCloned: any): any => {
+  if(itemToBeCloned) {
+    if (Array.isArray(itemToBeCloned)) {
+      let clonedArray = [];
+      for(let i = 0; i < itemToBeCloned.length; i++) {
+        clonedArray[i] = deepClone(itemToBeCloned[i]);
+      }
+      return clonedArray;
+    }
+
+    if (typeof itemToBeCloned === 'object') {
+      let clonedObject = {...itemToBeCloned};
+      for(let key in itemToBeCloned) {
+        clonedObject[key] = deepClone(itemToBeCloned[key]);
+      }
+      return clonedObject;
+    }
+  }
+  return itemToBeCloned;
+}
