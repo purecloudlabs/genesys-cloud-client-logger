@@ -12,7 +12,7 @@ interface IQueueItem {
 
 const logUploaderMap = new Map<string, LogUploader>();
 
-export const getOrCreateLogUploader = (url: string, debugMode: boolean = false): LogUploader => {
+export const getOrCreateLogUploader = (url: string, debugMode = false): LogUploader => {
   let uploader = logUploaderMap.get(url);
 
   /* if we don't have an uploader for this url, create one */
@@ -48,13 +48,13 @@ export class LogUploader {
     return this.sendPostRequest(requestParams);
   }
 
-  sendEntireQueue () {
+  sendEntireQueue (): void {
     this.debug('sending all queued requests instantly to clear out sendQueue', {
       sendQueue: this.sendQueue.map(i => i.requestParams)
     });
 
     let queueItem: IQueueItem | undefined;
-    /* tslint:disable-next-line:no-conditional-assignment */
+    /* eslint-disable-next-line no-cond-assign */
     while (queueItem = this.sendQueue.shift()) {
       this.postLogsToEndpoint(queueItem.requestParams);
     }
@@ -95,11 +95,11 @@ export class LogUploader {
       delayFirstAttempt: false,
       maxDelay: 15000
     })
-      .then((response) => {
+      .then((response: any) => {
         this.debug('successfully sent logs to server', { requestParams: queueItem.requestParams, response });
         queueItem.deferred.resolve(response);
       })
-      .catch((error) => {
+      .catch((error: any) => {
         this.debug('ERROR sending logs to server', { requestParams: queueItem.requestParams, error });
         return queueItem.deferred.reject(error);
       });
