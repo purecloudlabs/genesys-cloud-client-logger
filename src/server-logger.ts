@@ -10,7 +10,7 @@ const MAX_LOG_SIZE = 14500;
 const DEFAULT_UPLOAD_DEBOUNCE = 4000;
 
 export class ServerLogger {
-  private isInitialized: boolean = false;
+  private isInitialized = false;
   private logger: Logger;
   private logBuffer: ILogBufferItem[] = [];
   private debounceLogUploadTime: number;
@@ -68,7 +68,7 @@ export class ServerLogger {
     }
 
     /* use the last item in the buffer if it exists, otherwise start with a blank buffer item */
-    const useNewBufferItem: boolean = !this.logBuffer.length;
+    const useNewBufferItem = !this.logBuffer.length;
     let bufferItem: ILogBufferItem;
 
     if (useNewBufferItem) {
@@ -117,7 +117,7 @@ export class ServerLogger {
     this.sendLogsToServer();
   }
 
-  private async sendLogsToServer (immediate: boolean = false): Promise<any> {
+  private async sendLogsToServer (immediate = false): Promise<any> {
     if (!this.logBuffer.length) {
       /* clear timer */
       clearTimeout(this.debounceTimer);
@@ -130,6 +130,7 @@ export class ServerLogger {
     if (!immediate) {
       if (!this.debounceTimer) {
         this.debug(`sendLogsToServer() 'immediate' is false. setting up 'debounceTimer' to ${this.debounceLogUploadTime}ms`);
+        /* eslint-disable-next-line @typescript-eslint/no-misused-promises */
         this.debounceTimer = setTimeout(() => this.sendLogsToServer(true), this.debounceLogUploadTime);
       } else {
         this.debug(`sendLogsToServer() 'immediate' is false. 'debounceTimer' is already running`);
@@ -211,17 +212,27 @@ export class ServerLogger {
   }
 
   private convertToLogMessage (message: string, details?: any): ILogMessage {
-    return {
+    const log: ILogMessage = {
       clientTime: new Date().toISOString(),
       clientId: this.logger.clientId,
       message,
       details
     };
+
+    const { secondaryAppName, secondaryAppVersion, secondaryAppId } = this.logger.config;
+    /* only add these if they are configured */
+    if (secondaryAppName) {
+      log.secondaryAppName = secondaryAppName;
+      log.secondaryAppVersion = secondaryAppVersion;
+      log.secondaryAppId = secondaryAppId;
+    }
+
+    return log;
   }
 
   private convertToTrace (level: LogLevel, log: ILogMessage): ITrace {
     return {
-      topic: this.logger.config.logTopic,
+      topic: this.logger.config.appName,
       level: level.toUpperCase(),
       message: stringify(log)
     };
@@ -231,7 +242,7 @@ export class ServerLogger {
     return {
       accessToken: this.logger.config.accessToken,
       app: {
-        appId: this.logger.config.logTopic,
+        appId: this.logger.config.appName,
         appVersion: this.logger.config.appVersion
       },
       traces
@@ -244,6 +255,6 @@ export class ServerLogger {
     }
 
     /* tslint:disable-next-line:no-console */
-    console.log(`%c [DEBUG:${this.logger.config.logTopic}] ${message}`, 'color: #32a852', cloneDeep(details));
+    console.log(`%c [DEBUG:${this.logger.config.appName}] ${message}`, 'color: #32a852', cloneDeep(details));
   }
 }

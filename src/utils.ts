@@ -13,13 +13,13 @@ export const calculateLogMessageSize = function (trace: any): number {
 };
 
 export const getDeferred = (): IDeferred => {
-  let res: any;
-  let rej: any;
+  let resolve: any;
+  let reject: any;
 
-  const promise = new Promise((resolve, reject) => {
-    res = resolve;
-    rej = reject;
+  const promise = new Promise((res, rej) => {
+    resolve = res;
+    reject = rej;
   });
 
-  return { promise, resolve: res, reject: rej };
+  return { promise, resolve, reject };
 }

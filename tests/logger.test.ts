@@ -11,7 +11,7 @@ describe('Logger', () => {
       accessToken: 'secure',
       url: 'https://inindca.com/trace',
       appVersion: '1.2.3',
-      logTopic: 'gc-logger-unit-test',
+      appName: 'gc-logger-unit-test',
       debugMode: false,
       stringify: false
     };
@@ -47,6 +47,15 @@ describe('Logger', () => {
       logger = new Logger(config);
 
       expect(logger['serverLogger']).toBeFalsy();
+    });
+
+    it('should unofficially still support `logTopic`', () => {
+      delete config.appName;
+      (config as any).logTopic = 'brad-pitt';
+
+      logger = new Logger(config);
+
+      expect(logger.config.appName).toBe('brad-pitt');
     });
   });
 
@@ -139,15 +148,15 @@ describe('Logger', () => {
       addLogToSendSpy = jest.spyOn(logger['serverLogger'], 'addLogToSend').mockImplementation();
     });
 
-    it('should prefix the message with the logTopic if present', () => {
+    it('should prefix the message with the appName if present', () => {
       const msg = 'I am logging this';
       logMessageFn('warn', msg, null, true);
 
-      expect(warnSpy).toHaveBeenCalledWith(`[${config.logTopic}] ${msg}`, null);
+      expect(warnSpy).toHaveBeenCalledWith(`[${config.appName}] ${msg}`, null);
     });
 
-    it('should not prefix the message with the logTopic if absent', () => {
-      logger.config.logTopic = null as any;
+    it('should not prefix the message with the appName if absent', () => {
+      logger.config.appName = null as any;
 
       const msg = 'I am logging this';
       logMessageFn('warn', msg, null, true);
@@ -162,14 +171,14 @@ describe('Logger', () => {
       const details = { prop: 'And here are some extra details' };
       logMessageFn('warn', msg, details, true);
 
-      expect(warnSpy).toHaveBeenCalledWith(`[${config.logTopic}] ${msg}`, JSON.stringify(details));
+      expect(warnSpy).toHaveBeenCalledWith(`[${config.appName}] ${msg}`, JSON.stringify(details));
     });
 
     it('should set error details', () => {
       const e = new Error('bad things happen');
       logMessageFn('warn', e, null, true);
 
-      expect(warnSpy).toHaveBeenCalledWith(`[${config.logTopic}] bad things happen`, e);
+      expect(warnSpy).toHaveBeenCalledWith(`[${config.appName}] bad things happen`, e);
     });
 
     it('should skip server logging', () => {
@@ -194,7 +203,7 @@ describe('Logger', () => {
     it('should log to server', () => {
       /* with skipServer = true */
       logMessageFn('warn', 'do not skip server', null, false);
-      expect(addLogToSendSpy).toHaveBeenCalledWith('warn', `[${config.logTopic}] do not skip server`, null);
+      expect(addLogToSendSpy).toHaveBeenCalledWith('warn', `[${config.appName}] do not skip server`, null);
     });
   });
 

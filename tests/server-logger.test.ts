@@ -22,7 +22,7 @@ describe('ServerLogger', () => {
       accessToken: 'secure',
       url: 'https://inindca.com/trace',
       appVersion: '1.2.3',
-      logTopic: 'gc-logger-unit-test',
+      appName: 'gc-logger-unit-test',
       debugMode: false
     };
 
@@ -102,7 +102,7 @@ describe('ServerLogger', () => {
     it('should truncate log if it is too large', () => {
       const details = { deets: STRING_SIZE_15090_BYTES };
       const truncatedTrace: ITrace = {
-        topic: config.logTopic,
+        topic: config.appName,
         level: 'info',
         message: 'I was truncated'
       };
@@ -401,6 +401,29 @@ describe('ServerLogger', () => {
 
       expect(serverLogger['convertToLogMessage'](message, details)).toEqual(expected);
     });
+
+    it('should add secondaryApp fields if they exist in the config', () => {
+      const secondaryAppName = 'Batman';
+      const secondaryAppVersion = '2.0';
+      const secondaryAppId = 'top-secret-bat-cave-hash';
+
+      logger.config.secondaryAppName = secondaryAppName;
+      logger.config.secondaryAppVersion = secondaryAppVersion;
+      logger.config.secondaryAppId = secondaryAppId;
+
+      const message = 'It’s not who I am underneath, but what I do that defines me.';
+      const expected: ILogMessage = {
+        clientTime: expect.any(String),
+        clientId: logger.clientId,
+        message,
+        secondaryAppName,
+        secondaryAppVersion,
+        secondaryAppId,
+        details: undefined
+      };
+
+      expect(serverLogger['convertToLogMessage'](message)).toEqual(expected);
+    });
   });
 
   describe('convertToTrace()', () => {
@@ -414,7 +437,7 @@ describe('ServerLogger', () => {
       };
 
       expect(serverLogger['convertToTrace'](level, logMessage)).toEqual({
-        topic: logger.config.logTopic,
+        topic: logger.config.appName,
         level: 'WARN',
         message: stringify(logMessage)
       });
@@ -428,7 +451,7 @@ describe('ServerLogger', () => {
       expect(serverLogger['convertToRequestParams'](traces)).toEqual({
         accessToken: logger.config.accessToken,
         app: {
-          appId: logger.config.logTopic,
+          appId: logger.config.appName,
           appVersion: logger.config.appVersion
         },
         traces
@@ -454,7 +477,7 @@ describe('ServerLogger', () => {
     it('should log if debugMode is `true`', () => {
       serverLogger['logger'].config.debugMode = true;
       debugFn('message', { details: 'object' });
-      expect(consoleLogSpy).toHaveBeenCalledWith(`%c [DEBUG:${serverLogger['logger'].config.logTopic}] message`, 'color: #32a852', { details: 'object' });
+      expect(consoleLogSpy).toHaveBeenCalledWith(`%c [DEBUG:${serverLogger['logger'].config.appName}] message`, 'color: #32a852', { details: 'object' });
     });
   });
 });

@@ -22,6 +22,12 @@ export class Logger {
       config.logLevel = 'info';
     }
 
+    /* do this for (unofficial) backwards compat */
+    if (!config.appName && (config as any).logTopic) {
+      this.warn('`logTopic` has been renamed to `appName`. Please use `appName`', null, true);
+      config.appName = (config as any).logTopic;
+    }
+
     this.config = config;
 
     /* default to always set up server logging */
@@ -34,23 +40,23 @@ export class Logger {
     this.config.accessToken = token;
   }
 
-  log (message: string | Error, details?: any, skipServer: boolean = false): void {
+  log (message: string | Error, details?: any, skipServer = false): void {
     this.logMessage('log', message, details, skipServer);
   }
 
-  debug (message: string | Error, details?: any, skipServer: boolean = false): void {
+  debug (message: string | Error, details?: any, skipServer = false): void {
     this.logMessage('debug', message, details, skipServer);
   }
 
-  info (message: string | Error, details?: any, skipServer: boolean = false): void {
+  info (message: string | Error, details?: any, skipServer = false): void {
     this.logMessage('info', message, details, skipServer);
   }
 
-  warn (message: string | Error, details?: any, skipServer: boolean = false): void {
+  warn (message: string | Error, details?: any, skipServer = false): void {
     this.logMessage('warn', message, details, skipServer);
   }
 
-  error (message: string | Error, details?: any, skipServer: boolean = false): void {
+  error (message: string | Error, details?: any, skipServer = false): void {
     this.logMessage('error', message, details, skipServer);
   }
 
@@ -65,7 +71,7 @@ export class Logger {
       message = message.message;
     }
 
-    const prefix = this.config?.logTopic ? `[${this.config.logTopic}] ` : '';
+    const prefix = this.config?.appName ? `[${this.config.appName}] ` : '';
     message = `${prefix}${message}`;
 
     /* log locally */

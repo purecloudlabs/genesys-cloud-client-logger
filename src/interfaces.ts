@@ -1,24 +1,67 @@
 export interface ILoggerConfig {
-  /** JWT access token to use in HTTP request */
+  /**
+   * JWT access token to use in HTTP request
+   */
   accessToken: string;
   /**
    * url to send the logs to (note this needs to be the full URL)
    * an HTTP `POST` request will be issued to this url
    */
   url: string;
-  /** version of app using the logging library */
+  /**
+   * the version of app using the logging library.
+   */
   appVersion: string;
-  /** all local logs will be prefixed by this. */
-  logTopic: string;
-  /** initialize server logging. defaults to `true` */
+  /**
+   * All local logs will be prefixed by this.
+   * This is the app name of the app using the logger
+   * Could also be thought of as the `appName`.
+   */
+  appName: string;
+  /**
+   * This name is used when the app who is using the logger
+   * (ie. the `logTopic` app) is being imported/used/consumed
+   * by another app. Another way to think about this would
+   * be `secondaryAppName` is who this app's logger is logging
+   * "on behalf of" or the "parent app of".
+   */
+  secondaryAppName?: string;
+  /**
+   * This version is used when the app who is using the logger
+   * (ie. the `logTopic` app) is being imported/used/consumed
+   * by another app. Another way to think about this would
+   * be `secondaryAppName` is who this app's logger is logging
+   * "on behalf of" or the "parent app of".
+   *
+   * NOTE: this is only used if `secondaryAppName` is provided
+   */
+  secondaryAppVersion?: string;
+  /**
+   * This should be the `clientId` of the parent app's logger.
+   * It is used to correlate the parent app to this child app.
+   *
+   * NOTE: this is only used if `secondaryAppName` is provided
+   */
+  secondaryAppId?: string;
+  /**
+   * initialize server logging. defaults to `true`
+   */
   initializeServerLogging?: boolean;
-  /** logs at this level or high get sent to the server. defaults to 'info' */
+  /**
+   * logs at this level or high get sent to the server. defaults to 'info'
+   */
   logLevel?: LogLevel;
-  /** time to debounce logs uploads to the server. defaults to 4000 */
+  /**
+   * time to debounce logs uploads to the server. defaults to 4000
+   */
   uploadDebounceTime?: number;
-  /** debug logger events. defaults to `false` */
+  /**
+   * debug logger events. defaults to `false`
+   */
   debugMode?: boolean;
-  /** stringify log details when writing to console. defaults to `false` */
+  /**
+   * stringify log details when writing to console. defaults to `false`
+   */
   stringify?: boolean;
 }
 
@@ -34,6 +77,9 @@ export interface ILogMessage {
   clientTime: string;
   clientId: string;
   message: string;
+  secondaryAppName?: string;
+  secondaryAppVersion?: string;
+  secondaryAppId?: string;
   details?: any
 }
 
