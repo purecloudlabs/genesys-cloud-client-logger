@@ -22,7 +22,7 @@ export interface ILoggerConfig {
    * This name is used when the app who is using the logger
    * (ie. the `logTopic` app) is being imported/used/consumed
    * by another app. Another way to think about this would
-   * be `secondaryAppName` is who this app's logger is loggin
+   * be `secondaryAppName` is who this app's logger is logging
    * "on behalf of" or the "parent app of".
    */
   secondaryAppName?: string;
@@ -30,7 +30,7 @@ export interface ILoggerConfig {
    * This version is used when the app who is using the logger
    * (ie. the `logTopic` app) is being imported/used/consumed
    * by another app. Another way to think about this would
-   * be `secondaryAppName` is who this app's logger is loggin
+   * be `secondaryAppName` is who this app's logger is logging
    * "on behalf of" or the "parent app of".
    *
    * NOTE: this is only used if `secondaryAppName` is provided
