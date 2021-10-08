@@ -18,7 +18,8 @@
     "build:dev": "npm run clean && tsc -p . && webpack",
     "lint": "eslint -c .eslintrc.js --ext .ts src",
     "lint:fix": "npm run lint -- --fix",
-    "test": "jest --collectCoverage",
+    "test": "npm run lint && jest --collectCoverage",
+    "test:unit": "jest --collectCoverage",
     "test:watch": "jest --watch --collectCoverage=false --runInBand",
     "test:server": "stupid-server -s"
   },
@@ -26,7 +27,6 @@
     "dist"
   ],
   "pre-push": [
-    "lint",
     "test"
   ],
   "author": "garrett.jensen@genesys.com",
