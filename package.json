@@ -18,7 +18,7 @@
     "build:dev": "npm run clean && tsc -p . && webpack",
     "lint": "eslint -c .eslintrc.js --ext .ts src",
     "lint:fix": "npm run lint -- --fix",
-    "test": "npm run lint && jest --collectCoverage",
+    "test": "npm run lint && npm run test:unit",
     "test:unit": "jest --collectCoverage",
     "test:watch": "jest --watch --collectCoverage=false --runInBand",
     "test:server": "stupid-server -s"
