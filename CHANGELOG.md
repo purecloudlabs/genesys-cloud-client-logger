@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 * [PCM-1735](https://inindca.atlassian.net/browse/PCM-1735) – Add `secondaryAppName`, `secondaryAppVersion`, `secondaryAppId` to logger constructor.
+* [PCM-1736](https://inindca.atlassian.net/browse/PCM-1736) – Added `logger: ILogger` to constructor config. If a logger is passed it, it will be used _instead of_ the default `console`.
+Note that passing in a logger does not stop the logger from uploading server logs.
 
 ### Changed
 * Changed package.json entry points:

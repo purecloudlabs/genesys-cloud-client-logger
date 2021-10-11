@@ -63,9 +63,75 @@ export interface ILoggerConfig {
    * stringify log details when writing to console. defaults to `false`
    */
   stringify?: boolean;
+  /**
+   * Optional extra logger to use instead of the console.
+   * Default: console
+   * NOTE: unless `initializeServerLogging = false`, logs
+   * will also attempt to upload to the server, even if an
+   * additional logger is passed in. This logger will be used
+   * in place of the console, but still alongside this logger.
+   */
+  logger?: ILogger;
 }
 
-export type LogLevel = 'log' | 'debug' | 'info' | 'warn' | 'error';
+export interface ILogger {
+  /**
+   * Log a message to the location specified by the logger.
+   * The logger can decide if it wishes to implement `details`
+   * or `skipServer`.
+   *
+   * @param message message or error to log
+   * @param details any additional details to log
+   * @param skipServer should log skip server
+   */
+  log (message: string | Error, details?: any, skipServer?: boolean): void;
+
+  /**
+   * Log a message to the location specified by the logger.
+   * The logger can decide if it wishes to implement `details`
+   * or `skipServer`.
+   *
+   * @param message message or error to log
+   * @param details any additional details to log
+   * @param skipServer should log skip server
+   */
+  debug (message: string | Error, details?: any, skipServer?: boolean): void;
+
+  /**
+   * Log a message to the location specified by the logger.
+   * The logger can decide if it wishes to implement `details`
+   * or `skipServer`.
+   *
+   * @param message message or error to log
+   * @param details any additional details to log
+   * @param skipServer should log skip server
+   */
+  info (message: string | Error, details?: any, skipServer?: boolean): void;
+
+  /**
+   * Log a message to the location specified by the logger.
+   * The logger can decide if it wishes to implement `details`
+   * or `skipServer`.
+   *
+   * @param message message or error to log
+   * @param details any additional details to log
+   * @param skipServer should log skip server
+   */
+  warn (message: string | Error, details?: any, skipServer?: boolean): void;
+
+  /**
+   * Log a message to the location specified by the logger.
+   * The logger can decide if it wishes to implement `details`
+   * or `skipServer`.
+   *
+   * @param message message or error to log
+   * @param details any additional details to log
+   * @param skipServer should log skip server
+   */
+  error (message: string | Error, details?: any, skipServer?: boolean): void;
+}
+
+export type LogLevel = keyof ILogger;
 
 export interface ITrace {
   topic: string;

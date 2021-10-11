@@ -57,7 +57,7 @@ describe('ServerLogger', () => {
     });
 
     it('should set config to passed in options', () => {
-      config.uploadDebounceTime = 14000;
+      logger.config.uploadDebounceTime = 14000;
       jest.spyOn(window, 'addEventListener').mockImplementation();
 
       serverLogger = new ServerLogger(logger);

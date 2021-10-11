@@ -29,16 +29,36 @@ describe('Logger', () => {
       });
       expect(logger.clientId).toBeTruthy();
       expect(logger['serverLogger'] instanceof ServerLogger).toBe(true);
+      expect(logger.config.logger).toBeUndefined();
+      expect(logger['secondaryLogger']).toBe(console);
+    });
+
+    it('should shallow copy passed in config and not store logger in the config', () => {
+      config.logger = console;
+      logger = new Logger(config);
+
+      expect(logger.config).not.toBe(config);
+      expect(logger.config.logger).toBeUndefined();
+      expect(logger['secondaryLogger']).toBe(console);
+    });
+
+    it('should use config log level', () => {
+      config.logLevel = 'debug';
+
+      logger = new Logger(config);
+
+      expect(logger.config.logLevel).toBe('debug');
     });
 
     it('should warn for invalid log level and set to "info"', () => {
       config.logLevel = 'nope' as any;
+      config.logger = console;
       jest.spyOn(console, 'warn').mockImplementation();
 
       logger = new Logger(config);
 
       expect(logger.config.logLevel).toBe('info');
-      expect(console.warn).toHaveBeenCalledWith('Invalid log level: "nope". Default "info" will be used instead.', null);
+      expect(console.warn).toHaveBeenCalledWith('[gc-logger-unit-test] Invalid log level: "nope". Default "info" will be used instead.', null);
     });
 
     it('should not initialize with server logging', () => {
@@ -198,6 +218,22 @@ describe('Logger', () => {
       logger.config.logLevel = 'error';
       logMessageFn('warn', 'skip server please', null, false);
       expect(addLogToSendSpy).not.toHaveBeenCalled();
+    });
+
+    it('should swallow errors from any custom logger', () => {
+      const message = 'People who take care of chickens are literally chicken tenders';
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      logger['secondaryLogger'] = function () { } as any; // doesn't implement ILogger
+
+      logMessageFn('info', message, null, false);
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Error logging using custom logger passed into `genesys-cloud-client-logger`',
+        expect.any(Object)
+      );
+      /* still uploads to server */
+      expect(addLogToSendSpy).toHaveBeenCalledWith('info', `[${config.appName}] ${message}`, null);
     });
 
     it('should log to server', () => {
