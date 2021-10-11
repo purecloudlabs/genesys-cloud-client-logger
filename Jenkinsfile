@@ -2,7 +2,6 @@
 
 webappPipeline {
     slaveLabel = 'dev_v2'
-    nodeVersion = '14.8.0'
     useArtifactoryRepo = false
     projectName = 'genesys-cloud-client-logger'
     manifest = directoryManifest('dist')
@@ -10,7 +9,12 @@ webappPipeline {
     publishPackage = { 'prod' }
 
     buildStep = {
-        sh('npm ci && npm test && npm run build')
+        sh("""
+          npm install npm@7 -g && \
+          npm ci && \
+          npm test && \
+          npm run build
+        """)
     }
 
     cmConfig = {
