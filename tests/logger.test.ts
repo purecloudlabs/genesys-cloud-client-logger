@@ -11,7 +11,7 @@ describe('Logger', () => {
       accessToken: 'secure',
       url: 'https://inindca.com/trace',
       appVersion: '1.2.3',
-      logTopic: 'gc-logger-unit-test',
+      appName: 'gc-logger-unit-test',
       debugMode: false,
       stringify: false
     };
@@ -29,16 +29,36 @@ describe('Logger', () => {
       });
       expect(logger.clientId).toBeTruthy();
       expect(logger['serverLogger'] instanceof ServerLogger).toBe(true);
+      expect(logger.config.logger).toBeUndefined();
+      expect(logger['secondaryLogger']).toBe(console);
+    });
+
+    it('should shallow copy passed in config and not store logger in the config', () => {
+      config.logger = console;
+      logger = new Logger(config);
+
+      expect(logger.config).not.toBe(config);
+      expect(logger.config.logger).toBeUndefined();
+      expect(logger['secondaryLogger']).toBe(console);
+    });
+
+    it('should use config log level', () => {
+      config.logLevel = 'debug';
+
+      logger = new Logger(config);
+
+      expect(logger.config.logLevel).toBe('debug');
     });
 
     it('should warn for invalid log level and set to "info"', () => {
       config.logLevel = 'nope' as any;
+      config.logger = console;
       jest.spyOn(console, 'warn').mockImplementation();
 
       logger = new Logger(config);
 
       expect(logger.config.logLevel).toBe('info');
-      expect(console.warn).toHaveBeenCalledWith('Invalid log level: "nope". Default "info" will be used instead.', null);
+      expect(console.warn).toHaveBeenCalledWith('[gc-logger-unit-test] Invalid log level: "nope". Default "info" will be used instead.', null);
     });
 
     it('should not initialize with server logging', () => {
@@ -47,6 +67,15 @@ describe('Logger', () => {
       logger = new Logger(config);
 
       expect(logger['serverLogger']).toBeFalsy();
+    });
+
+    it('should unofficially still support `logTopic`', () => {
+      delete config.appName;
+      (config as any).logTopic = 'brad-pitt';
+
+      logger = new Logger(config);
+
+      expect(logger.config.appName).toBe('brad-pitt');
     });
   });
 
@@ -139,15 +168,15 @@ describe('Logger', () => {
       addLogToSendSpy = jest.spyOn(logger['serverLogger'], 'addLogToSend').mockImplementation();
     });
 
-    it('should prefix the message with the logTopic if present', () => {
+    it('should prefix the message with the appName if present', () => {
       const msg = 'I am logging this';
       logMessageFn('warn', msg, null, true);
 
-      expect(warnSpy).toHaveBeenCalledWith(`[${config.logTopic}] ${msg}`, null);
+      expect(warnSpy).toHaveBeenCalledWith(`[${config.appName}] ${msg}`, null);
     });
 
-    it('should not prefix the message with the logTopic if absent', () => {
-      logger.config.logTopic = null as any;
+    it('should not prefix the message with the appName if absent', () => {
+      logger.config.appName = null as any;
 
       const msg = 'I am logging this';
       logMessageFn('warn', msg, null, true);
@@ -162,14 +191,14 @@ describe('Logger', () => {
       const details = { prop: 'And here are some extra details' };
       logMessageFn('warn', msg, details, true);
 
-      expect(warnSpy).toHaveBeenCalledWith(`[${config.logTopic}] ${msg}`, JSON.stringify(details));
+      expect(warnSpy).toHaveBeenCalledWith(`[${config.appName}] ${msg}`, JSON.stringify(details));
     });
 
     it('should set error details', () => {
       const e = new Error('bad things happen');
       logMessageFn('warn', e, null, true);
 
-      expect(warnSpy).toHaveBeenCalledWith(`[${config.logTopic}] bad things happen`, e);
+      expect(warnSpy).toHaveBeenCalledWith(`[${config.appName}] bad things happen`, e);
     });
 
     it('should skip server logging', () => {
@@ -191,10 +220,26 @@ describe('Logger', () => {
       expect(addLogToSendSpy).not.toHaveBeenCalled();
     });
 
+    it('should swallow errors from any custom logger', () => {
+      const message = 'People who take care of chickens are literally chicken tenders';
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      logger['secondaryLogger'] = function () { } as any; // doesn't implement ILogger
+
+      logMessageFn('info', message, null, false);
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Error logging using custom logger passed into `genesys-cloud-client-logger`',
+        expect.any(Object)
+      );
+      /* still uploads to server */
+      expect(addLogToSendSpy).toHaveBeenCalledWith('info', `[${config.appName}] ${message}`, null);
+    });
+
     it('should log to server', () => {
       /* with skipServer = true */
       logMessageFn('warn', 'do not skip server', null, false);
-      expect(addLogToSendSpy).toHaveBeenCalledWith('warn', `[${config.logTopic}] do not skip server`, null);
+      expect(addLogToSendSpy).toHaveBeenCalledWith('warn', `[${config.appName}] do not skip server`, null);
     });
   });
 

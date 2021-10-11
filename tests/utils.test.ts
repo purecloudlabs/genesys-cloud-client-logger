@@ -33,7 +33,7 @@ describe('deepClone()', () => {
     expect(clonedTest).not.toBe(testItem);
   });
   it('should clone a passed in item deeply; complex array', () => {
-    const testItem = [1, "hello", [1, 2, 3], function() { console.log('hello')}, {test1: 1, test2: 2}];
+    const testItem = [1, "hello", [1, 2, 3], function () { console.log('hello') }, { test1: 1, test2: 2 }];
     const clonedTest = deepClone(testItem);
     expect(clonedTest).toStrictEqual(testItem);
     expect(clonedTest).not.toBe(testItem);
@@ -43,7 +43,7 @@ describe('deepClone()', () => {
     expect(clonedTest[4]).not.toBe(testItem[4]);
   });
   it('should clone a passed in item deeply; simple object', () => {
-    const testItem = {test1: 1, test2: 2};
+    const testItem = { test1: 1, test2: 2 };
     const clonedTest = deepClone(testItem);
     expect(clonedTest).toStrictEqual(testItem);
     expect(clonedTest).not.toBe(testItem);
@@ -60,7 +60,7 @@ describe('deepClone()', () => {
           testString3: 'hello'
         }
       },
-      testFunc: function() {
+      testFunc: function () {
         console.log('hello');
       },
       testArray: [1, 2, 3, 4]
@@ -74,7 +74,7 @@ describe('deepClone()', () => {
     expect(clonedTest.testArray).not.toBe(testItem.testArray);
   });
   it('should clone a passed in item deeply; function', () => {
-    const testItem = function() {
+    const testItem = function () {
       console.log('hello');
     }
     const clonedTest = deepClone(testItem);
@@ -85,5 +85,5 @@ describe('deepClone()', () => {
     const testItem = null;
     const clonedTest = deepClone(testItem);
     expect(clonedTest).toBeFalsy();
-  })
+  });
 });

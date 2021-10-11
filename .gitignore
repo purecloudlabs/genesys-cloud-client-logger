@@ -3,6 +3,7 @@ node_modules
 # IDE - VSCode
 !.vscode/launch.json
 
+.ignore
 .history/*
 dist
 coverage/

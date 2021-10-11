@@ -13,34 +13,36 @@ export const calculateLogMessageSize = function (trace: any): number {
 };
 
 export const getDeferred = (): IDeferred => {
-  let res: any;
-  let rej: any;
+  let resolve: any;
+  let reject: any;
 
-  const promise = new Promise((resolve, reject) => {
-    res = resolve;
-    rej = reject;
+  const promise = new Promise((res, rej) => {
+    resolve = res;
+    reject = rej;
   });
 
-  return { promise, resolve: res, reject: rej };
+  return { promise, resolve, reject };
 }
 
-export const deepClone = (itemToBeCloned: any): any => {
-  if(itemToBeCloned) {
+export const deepClone = function deepClone<T> (itemToBeCloned: T): T {
+  /* eslint-disable guard-for-in */
+  if (itemToBeCloned) {
     if (Array.isArray(itemToBeCloned)) {
-      let clonedArray = [];
-      for(let i = 0; i < itemToBeCloned.length; i++) {
+      const clonedArray = [];
+      for (let i = 0; i < itemToBeCloned.length; i++) {
         clonedArray[i] = deepClone(itemToBeCloned[i]);
       }
-      return clonedArray;
+      return clonedArray as any as T;
     }
 
     if (typeof itemToBeCloned === 'object') {
-      let clonedObject = {...itemToBeCloned};
-      for(let key in itemToBeCloned) {
+      const clonedObject = { ...itemToBeCloned };
+      for (const key in itemToBeCloned) {
         clonedObject[key] = deepClone(itemToBeCloned[key]);
       }
       return clonedObject;
     }
   }
   return itemToBeCloned;
+  /* eslint-enable guard-for-in */
 }

@@ -1,13 +1,14 @@
 import { v4 } from 'uuid';
 import stringify from 'safe-json-stringify';
 
-import { ILoggerConfig, LogLevel } from './interfaces';
+import { ILoggerConfig, LogLevel, ILogger } from './interfaces';
 import { ServerLogger } from './server-logger';
 
-export class Logger {
+export class Logger implements ILogger {
   declare readonly clientId: string;
   config: ILoggerConfig;
   private serverLogger!: ServerLogger;
+  private secondaryLogger: ILogger;
 
   constructor (config: ILoggerConfig) {
     Object.defineProperty(this, 'clientId', {
@@ -15,14 +16,22 @@ export class Logger {
       writable: false
     });
 
-    if (this.logRank(config.logLevel) === -1) {
+    this.config = { ...config };
+    this.secondaryLogger = this.config.logger || console;
+    delete this.config.logger;
+
+    if (this.logRank(this.config.logLevel) === -1) {
       if (config.logLevel) {
         this.warn(`Invalid log level: "${config.logLevel}". Default "info" will be used instead.`, null, true);
       }
-      config.logLevel = 'info';
+      this.config.logLevel = 'info';
     }
 
-    this.config = config;
+    /* do this for (unofficial) backwards compat */
+    if (!config.appName && (config as any).logTopic) {
+      this.warn('`logTopic` has been renamed to `appName`. Please use `appName`', null, true);
+      this.config.appName = (config as any).logTopic;
+    }
 
     /* default to always set up server logging */
     if (this.config.initializeServerLogging !== false) {
@@ -34,23 +43,23 @@ export class Logger {
     this.config.accessToken = token;
   }
 
-  log (message: string | Error, details?: any, skipServer: boolean = false): void {
+  log (message: string | Error, details?: any, skipServer = false): void {
     this.logMessage('log', message, details, skipServer);
   }
 
-  debug (message: string | Error, details?: any, skipServer: boolean = false): void {
+  debug (message: string | Error, details?: any, skipServer = false): void {
     this.logMessage('debug', message, details, skipServer);
   }
 
-  info (message: string | Error, details?: any, skipServer: boolean = false): void {
+  info (message: string | Error, details?: any, skipServer = false): void {
     this.logMessage('info', message, details, skipServer);
   }
 
-  warn (message: string | Error, details?: any, skipServer: boolean = false): void {
+  warn (message: string | Error, details?: any, skipServer = false): void {
     this.logMessage('warn', message, details, skipServer);
   }
 
-  error (message: string | Error, details?: any, skipServer: boolean = false): void {
+  error (message: string | Error, details?: any, skipServer = false): void {
     this.logMessage('error', message, details, skipServer);
   }
 
@@ -65,14 +74,17 @@ export class Logger {
       message = message.message;
     }
 
-    const prefix = this.config?.logTopic ? `[${this.config.logTopic}] ` : '';
+    const prefix = this.config.appName ? `[${this.config.appName}] ` : '';
     message = `${prefix}${message}`;
 
-    /* log locally */
-    if (this.config?.stringify) {
-      console[logLevel](message, stringify(details));
-    } else {
-      console[logLevel](message, details);
+    try {
+      /* log to secondary logger (default is console) */
+      this.secondaryLogger[logLevel](message,
+        this.config.stringify ? stringify(details) : details
+      );
+    } catch (error) {
+      /* don't let custom logger errors stop our logger */
+      console.error('Error logging using custom logger passed into `genesys-cloud-client-logger`', { error, secondaryLogger: this.secondaryLogger, message, details, skipServer });
     }
 
     /* log to the server */
