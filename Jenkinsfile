@@ -17,6 +17,7 @@ webappPipeline {
         return [
             managerEmail: 'purecloud-client-media@genesys.com',
             rollbackPlan: 'Patch version with fix',
+            qaId: '5d41d9195ca9700dac0ef53a'
         ]
     }
 

@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Note that passing in a logger does not stop the logger from uploading server logs.
 
 ### Changed
+* [PCM-1665](https://inindca.atlassian.net/browse/PCM-1665) – wrote custom deep clone function and removed `lodash` dependency.
 * Changed package.json entry points:
     * `"main"` -> points to commonJS build (unchanged)
     * `"browser"` -> renamed to `"web"` but still points to bundled CDN built file

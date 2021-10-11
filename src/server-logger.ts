@@ -1,9 +1,8 @@
 import stringify from 'safe-json-stringify';
-import cloneDeep from 'lodash.clonedeep';
 
 import { Logger } from './logger';
 import { LogLevel, ITrace, ILogBufferItem, ILogMessage, ISendLogRequest } from './interfaces';
-import { calculateLogMessageSize } from './utils';
+import { calculateLogMessageSize, deepClone } from './utils';
 import { getOrCreateLogUploader, LogUploader } from './log-uploader';
 
 const MAX_LOG_SIZE = 14500;
@@ -172,7 +171,7 @@ export class ServerLogger {
     let trace: ITrace;
     let truncatedTraceSize: number;
     const originalTraceSize = calculateLogMessageSize(this.convertToTrace(logLevel, log));
-    const logCopy = cloneDeep(log);
+    const logCopy = deepClone(log);
     const truncText = '[[TRUNCATED]]';
 
     /* first truncate the details */
@@ -255,6 +254,6 @@ export class ServerLogger {
     }
 
     /* tslint:disable-next-line:no-console */
-    console.log(`%c [DEBUG:${this.logger.config.appName}] ${message}`, 'color: #32a852', cloneDeep(details));
+    console.log(`%c [DEBUG:${this.logger.config.appName}] ${message}`, 'color: #32a852', deepClone(details));
   }
 }
