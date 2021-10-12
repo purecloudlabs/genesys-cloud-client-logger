@@ -1,7 +1,7 @@
 const myLogger = {};
 
 ['log', 'debug', 'info', 'warn', 'error'].forEach(level => {
-  myLogger[level] = console[level].bind('__my-custom-logger__');
+  myLogger[level] = function () { console[level]('__my-custom-logger__', ...arguments); }
 });
 
 window.logger = new GenesysCloudClientLogger({
