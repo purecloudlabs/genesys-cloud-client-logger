@@ -402,23 +402,23 @@ describe('ServerLogger', () => {
       expect(serverLogger['convertToLogMessage'](message, details)).toEqual(expected);
     });
 
-    it('should add secondaryApp fields if they exist in the config', () => {
-      const secondaryAppName = 'Batman';
-      const secondaryAppVersion = '2.0';
-      const secondaryAppId = 'top-secret-bat-cave-hash';
+    it('should add originApp fields if they exist in the config', () => {
+      const originAppName = 'Batman';
+      const originAppVersion = '2.0';
+      const originAppId = 'top-secret-bat-cave-hash';
 
-      logger.config.secondaryAppName = secondaryAppName;
-      logger.config.secondaryAppVersion = secondaryAppVersion;
-      logger.config.secondaryAppId = secondaryAppId;
+      logger.config.originAppName = originAppName;
+      logger.config.originAppVersion = originAppVersion;
+      logger.config.originAppId = originAppId;
 
       const message = 'It’s not who I am underneath, but what I do that defines me.';
       const expected: ILogMessage = {
         clientTime: expect.any(String),
         clientId: logger.clientId,
         message,
-        secondaryAppName,
-        secondaryAppVersion,
-        secondaryAppId,
+        originAppName,
+        originAppVersion,
+        originAppId,
         details: undefined
       };
 

@@ -15,9 +15,9 @@ window.cLogger = new GenesysCloudClientLogger({
   url: 'https://api.inindca.com/api/v2/diagnostics/trace',
   appVersion: '4.5.6',
   appName: `gc-client-logger-testing--child`,
-  secondaryAppName: pLogger.config.appName,
-  secondaryAppVersion: pLogger.config.appVersion,
-  secondaryAppId: pLogger.clientId,
+  originAppName: pLogger.config.appName,
+  originAppVersion: pLogger.config.appVersion,
+  originAppId: pLogger.clientId,
   logLevel: 'info',
   uploadDebounceTime: 4000,
   debugMode: true

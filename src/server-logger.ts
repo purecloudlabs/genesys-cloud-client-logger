@@ -218,12 +218,12 @@ export class ServerLogger {
       details
     };
 
-    const { secondaryAppName, secondaryAppVersion, secondaryAppId } = this.logger.config;
+    const { originAppName, originAppVersion, originAppId } = this.logger.config;
     /* only add these if they are configured */
-    if (secondaryAppName) {
-      log.secondaryAppName = secondaryAppName;
-      log.secondaryAppVersion = secondaryAppVersion;
-      log.secondaryAppId = secondaryAppId;
+    if (originAppName) {
+      log.originAppName = originAppName;
+      log.originAppVersion = originAppVersion;
+      log.originAppId = originAppId;
     }
 
     return log;

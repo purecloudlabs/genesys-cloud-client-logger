@@ -8,10 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # [v3.0.0](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v2.0.0...v3.0.0)
 ### BREAKING CHANGES
-* Renamed `ILoggerConfig` option `logTopic` to `appName` to stay more uniform with the addition of `secondaryApp[Name|Version]` fields (see **Added** below).
+* Renamed `ILoggerConfig` option `logTopic` to `appName` to stay more uniform with the addition of `originApp[Name|Version|Id]` fields (see **Added** below).
 
 ### Added
-* [PCM-1735](https://inindca.atlassian.net/browse/PCM-1735) – Add `secondaryAppName`, `secondaryAppVersion`, `secondaryAppId` to logger constructor.
+* [PCM-1735](https://inindca.atlassian.net/browse/PCM-1735) – Add `originAppName`, `originAppVersion`, `originAppId` to logger constructor.
 * [PCM-1736](https://inindca.atlassian.net/browse/PCM-1736) – Added `logger: ILogger` to constructor config. If a logger is passed it, it will be used _instead of_ the default `console`.
 Note that passing in a logger does not stop the logger from uploading server logs.
 
