@@ -57,27 +57,27 @@ interface ILoggerConfig {
    * This name is used when the app who is using the logger
    *  (ie. the `logTopic` app) is being imported/used/consumed
    *  by another app. Another way to think about this would
-   *  be `secondaryAppName` is who this app's logger is logging
+   *  be `originAppName` is who this app's logger is logging
    *  "on behalf of" or the "parent app of".
    */
-  secondaryAppName?: string;
+  originAppName?: string;
   /**
    * This version is used when the app who is using the logger
    *  (ie. the `logTopic` app) is being imported/used/consumed
    *  by another app. Another way to think about this would
-   *  be `secondaryAppName` is who this app's logger is logging
+   *  be `originAppName` is who this app's logger is logging
    *  "on behalf of" or the "parent app of".
    *
-   * NOTE: this is only used if `secondaryAppName` is provided
+   * NOTE: this is only used if `originAppName` is provided
    */
-  secondaryAppVersion?: string;
+  originAppVersion?: string;
   /**
    * This should be the `clientId` of the parent app's logger.
    *  It is used to correlate the parent app to this child app.
    *
-   * NOTE: this is only used if `secondaryAppName` is provided
+   * NOTE: this is only used if `originAppName` is provided
    */
-  secondaryAppId?: string;
+  originAppId?: string;
   /**
    * initialize server logging. defaults to `true`
    */
