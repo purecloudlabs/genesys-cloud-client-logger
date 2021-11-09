@@ -26,7 +26,7 @@ export class ServerLogger {
     ) {
       const errMessage = 'Missing `url` and/or `appVersion` config options to set up server logging. ' +
         'Not sending logs to server for this logger instance';
-      this.logger.error(errMessage, { providedConfig: logger.config }, true);
+      this.logger.error(errMessage, { providedConfig: logger.config }, { skipServer: true });
       throw new Error(errMessage);
     }
 
@@ -57,7 +57,7 @@ export class ServerLogger {
           originalTraceSize: calculateLogMessageSize(trace),
           truncatedTrace: newTrace,
           truncatedTraceSize: calculateLogMessageSize(newTrace)
-        }, true);
+        }, { skipServer: true });
         return;
       }
 
@@ -150,7 +150,7 @@ export class ServerLogger {
       this.debug('calling logUploader.postLogsToEndpoint() with', { bufferItem, newLogBuffer: this.logBuffer });
       await this.logUploader.postLogsToEndpoint(this.convertToRequestParams(bufferItem.traces.reverse()));
     } catch (err) {
-      this.logger.error('Error sending logs to server', err, true);
+      this.logger.error('Error sending logs to server', err, { skipServer: true });
       /* no-op: the uploader will attempt reties. if the uploader throws, it means this log isn't going to make to the server */
     } finally {
       /* setup the debounce again */
@@ -186,7 +186,7 @@ export class ServerLogger {
         originalTraceSize,
         truncatedTraceSize,
         maxAllowedTraceSize: MAX_LOG_SIZE
-      }, true);
+      }, { skipServer: true });
       return trace;
     }
 
@@ -202,7 +202,7 @@ export class ServerLogger {
         originalTraceSize,
         truncatedTraceSize,
         maxAllowedTraceSize: MAX_LOG_SIZE
-      }, true);
+      }, { skipServer: true });
       return trace;
     }
 
