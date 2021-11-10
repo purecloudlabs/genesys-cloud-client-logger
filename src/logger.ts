@@ -1,7 +1,7 @@
 import { v4 } from 'uuid';
 import stringify from 'safe-json-stringify';
 
-import { ILoggerConfig, LogLevel, ILogger, LogFormatterFn, NextFnWithParams } from './interfaces';
+import { ILoggerConfig, LogLevel, ILogger, LogFormatterFn } from './interfaces';
 import { ServerLogger } from './server-logger';
 import { ILogMessageOptions, NextFn } from '.';
 

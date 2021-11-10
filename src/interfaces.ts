@@ -76,9 +76,10 @@ export interface ILoggerConfig {
    * These are essentially interceptors for log messages. They will allow
    * you to change the level, message, details or log options for any given
    * message. There are three options for handling messages:
-   *   next() - sends message as it was received to the next formatter
-   *   next(level, message, details, options) - sends message to the next formatter with the specified params
-   *   not calling next() at all - don't log the message
+   *
+   * next() - sends message as it was received to the next formatter
+   * next(level, message, details, options) - sends message to the next formatter with the specified params
+   * not calling next() at all - don't log the message
    */
   formatters?: LogFormatterFn[]
 }
