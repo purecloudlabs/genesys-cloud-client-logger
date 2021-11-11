@@ -92,51 +92,51 @@ export interface ILogger {
    *
    * @param message message or error to log
    * @param details any additional details to log
-   * @param skipServer should log skip server
+   * @param opts
    */
   log (message: string | Error, details?: any, opts?: ILogMessageOptions): void;
 
   /**
    * Log a message to the location specified by the logger.
    * The logger can decide if it wishes to implement `details`
-   * or `skipServer`.
+   * or `opts`.
    *
    * @param message message or error to log
    * @param details any additional details to log
-   * @param skipServer should log skip server
+   * @param opts
    */
   debug (message: string | Error, details?: any, opts?: ILogMessageOptions): void;
 
   /**
    * Log a message to the location specified by the logger.
    * The logger can decide if it wishes to implement `details`
-   * or `skipServer`.
+   * or `opts`.
    *
    * @param message message or error to log
    * @param details any additional details to log
-   * @param skipServer should log skip server
+   * @param opts
    */
   info (message: string | Error, details?: any, opts?: ILogMessageOptions): void;
 
   /**
    * Log a message to the location specified by the logger.
    * The logger can decide if it wishes to implement `details`
-   * or `skipServer`.
+   * or `opts`.
    *
    * @param message message or error to log
    * @param details any additional details to log
-   * @param skipServer should log skip server
+   * @param opts
    */
   warn (message: string | Error, details?: any, opts?: ILogMessageOptions): void;
 
   /**
    * Log a message to the location specified by the logger.
    * The logger can decide if it wishes to implement `details`
-   * or `skipServer`.
+   * or `opts`.
    *
    * @param message message or error to log
    * @param details any additional details to log
-   * @param skipServer should log skip server
+   * @param opts
    */
   error (message: string | Error, details?: any, opts?: ILogMessageOptions): void;
 }
