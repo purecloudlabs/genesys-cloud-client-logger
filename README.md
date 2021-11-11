@@ -98,5 +98,104 @@ interface ILoggerConfig {
    * stringify log details when writing to console. defaults to `false`
    */
   stringify?: boolean;
+  /**
+   * Optional extra logger to use instead of the console.
+   * Default: console
+   * NOTE: unless `initializeServerLogging = false`, logs
+   * will also attempt to upload to the server, even if an
+   * additional logger is passed in. This logger will be used
+   * in place of the console, but still alongside this logger.
+   */
+  logger?: ILogger;
+  /**
+   * These are essentially interceptors for log messages. They will allow
+   * you to change the level, message, details or log options for any given
+   * message. There are three options for handling messages:
+   *   next() - sends message as it was received to the next formatter
+   *   next(level, message, details, options) - sends message to the next formatter with the specified params
+   *   not calling next() at all - don't log the message
+   */
+  formatters?: LogFormatterFn[]
 }
+```
+
+### Logging messages
+``` ts
+log (message: string | Error, details?: any, opts?: ILogMessageOptions): void;
+
+interface ILogMessageOptions {
+  skipDefaultFormatter?: boolean,
+  skipServer?: boolean,
+  skipSecondaryLogger?: boolean,
+}
+```
+The default formatter handles extracting the message from an error object as well as prepending the app name to the
+message that will be logged. For example, if your app name is "really cool app" and you do something like this:
+``` ts
+logger.info('some message I care about', { favoriteColor: 'blue' });
+```
+It will be logged like this:
+```
+[really cool app] some message I care about {...}
+```
+If you were to log a message like this:
+```ts
+logger.info('some message I care about', { favoriteColor: 'blue' }, { skipDefaultFormatter: true });
+```
+It would be logged without the app name:
+```
+some message I care about {...}
+```
+
+
+### How Formatters Work
+Formatters are a great tool to handle unique logging situations. For example, let's say
+you have an error that has the potential to expose or send information that is unfit to
+be exposed. In a formatter, you can choose to manipulate the message or details, do 
+nothing, or skip logging the message entirely. A formatter will be provided a `next` 
+function in addition to the log message. If next is not called, the log will not be forwarded
+to downstream formatters and will not make it to the actual logger. Example:
+
+``` ts
+function myCustomFormatter (
+  level: LogLevel,
+  message: string | Error,
+  details: any | undefined,
+  options: ILogMessageOptions,
+  next: NextFn
+) {
+  // we want to only log this to the secondary logger (usually the console) and not send this 
+  // specific log to the server
+  if (message.includes('[confidential]')) {
+    options.skipServer = true;
+    return next(level, 'this message is confidential and redacted', details, options);
+  }
+
+  // we want to completely silence these messages
+  if (message.includes('[top secret]')) {
+    return;
+  }
+
+  // this formatter doesn't want to do anything special with this log, send it to the next formatter
+  next();
+}
+
+const logger = new Logger({
+  url: 'https://yoursite.com/logs',
+  accessToken: 'your-access-token',
+  appVersion: '1.2.3',
+  appName: 'your-client-app1',
+  formatters: [ myCustomFormatter ]
+});
+
+logger.info('here is a message');
+// will log a message like this to the server and secondaryLogger (console)
+// [your-client-app1] here is a message
+
+logger.info('here is a [confidential] message');
+// will log a message like secondaryLogger (console) but not the console
+// [your-client-app1] this message is confidential and redacted
+
+logger.info('here is a [top secret] message');
+// nothing will be sent to either logger
 ```

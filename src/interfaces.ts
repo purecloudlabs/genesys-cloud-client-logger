@@ -72,6 +72,16 @@ export interface ILoggerConfig {
    * in place of the console, but still alongside this logger.
    */
   logger?: ILogger;
+  /**
+   * These are essentially interceptors for log messages. They will allow
+   * you to change the level, message, details or log options for any given
+   * message. There are three options for handling messages:
+   *
+   * next() - sends message as it was received to the next formatter
+   * next(level, message, details, options) - sends message to the next formatter with the specified params
+   * not calling next() at all - don't log the message
+   */
+  formatters?: LogFormatterFn[]
 }
 
 export interface ILogger {
@@ -82,53 +92,53 @@ export interface ILogger {
    *
    * @param message message or error to log
    * @param details any additional details to log
-   * @param skipServer should log skip server
+   * @param opts
    */
-  log (message: string | Error, details?: any, skipServer?: boolean): void;
+  log (message: string | Error, details?: any, opts?: ILogMessageOptions): void;
 
   /**
    * Log a message to the location specified by the logger.
    * The logger can decide if it wishes to implement `details`
-   * or `skipServer`.
+   * or `opts`.
    *
    * @param message message or error to log
    * @param details any additional details to log
-   * @param skipServer should log skip server
+   * @param opts
    */
-  debug (message: string | Error, details?: any, skipServer?: boolean): void;
+  debug (message: string | Error, details?: any, opts?: ILogMessageOptions): void;
 
   /**
    * Log a message to the location specified by the logger.
    * The logger can decide if it wishes to implement `details`
-   * or `skipServer`.
+   * or `opts`.
    *
    * @param message message or error to log
    * @param details any additional details to log
-   * @param skipServer should log skip server
+   * @param opts
    */
-  info (message: string | Error, details?: any, skipServer?: boolean): void;
+  info (message: string | Error, details?: any, opts?: ILogMessageOptions): void;
 
   /**
    * Log a message to the location specified by the logger.
    * The logger can decide if it wishes to implement `details`
-   * or `skipServer`.
+   * or `opts`.
    *
    * @param message message or error to log
    * @param details any additional details to log
-   * @param skipServer should log skip server
+   * @param opts
    */
-  warn (message: string | Error, details?: any, skipServer?: boolean): void;
+  warn (message: string | Error, details?: any, opts?: ILogMessageOptions): void;
 
   /**
    * Log a message to the location specified by the logger.
    * The logger can decide if it wishes to implement `details`
-   * or `skipServer`.
+   * or `opts`.
    *
    * @param message message or error to log
    * @param details any additional details to log
-   * @param skipServer should log skip server
+   * @param opts
    */
-  error (message: string | Error, details?: any, skipServer?: boolean): void;
+  error (message: string | Error, details?: any, opts?: ILogMessageOptions): void;
 }
 
 export type LogLevel = keyof ILogger;
@@ -168,3 +178,20 @@ export interface ISendLogRequest {
   };
   traces: ITrace[];
 }
+
+export interface ILogMessageOptions {
+  skipDefaultFormatter?: boolean,
+  skipServer?: boolean,
+  skipSecondaryLogger?: boolean,
+}
+
+export type NextFn = NextFnWithoutParams & NextFnWithParams;
+export type NextFnWithoutParams = () => void;
+export type NextFnWithParams = (level: LogLevel, message: string | Error, details?: any, options?: ILogMessageOptions) => void;
+export type LogFormatterFn = (
+  level: LogLevel,
+  message: string | Error,
+  details: any | undefined,
+  options: ILogMessageOptions,
+  next: NextFn
+) => void;

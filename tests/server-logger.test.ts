@@ -128,7 +128,7 @@ describe('ServerLogger', () => {
       serverLogger.addLogToSend('info', 'msg', details);
 
       expect(serverLogger['logBuffer'].length).toBe(0);
-      expect(serverLogger['logger'].error).toHaveBeenCalledWith('truncated message is too large to send to server. not sending message', expect.any(Object), true);
+      expect(serverLogger['logger'].error).toHaveBeenCalledWith('truncated message is too large to send to server. not sending message', expect.any(Object), { skipServer: true });
     });
 
     it('should push a new bufferItem if the current log would put bufferSize over max allowed size', () => {
@@ -323,7 +323,7 @@ describe('ServerLogger', () => {
       await sendLogsToServerFn(true);
 
       /* should log the error */
-      expect(errorSpy).toHaveBeenCalledWith('Error sending logs to server', err, true);
+      expect(errorSpy).toHaveBeenCalledWith('Error sending logs to server', err, { skipServer: true });
 
       /* after the http request rejects, it should call itself to setup the timer */
       expect(sendLogsToServerSpy).toHaveBeenNthCalledWith(2);

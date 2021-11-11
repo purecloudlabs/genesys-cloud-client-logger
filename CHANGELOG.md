@@ -4,7 +4,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-# [Unreleased](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v3.0.0...HEAD)
+# [Unreleased](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.0.0...HEAD)
+# [v4.0.0](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v3.0.0...v4.0.0)
+### BREAKING CHANGES
+* Logging interface changed. This applies to *all* logging levels.
+``` ts
+// old signature
+info (message: string | Error, details?: any, skipServer?: boolean): void;
+
+// new signature
+info (message: string | Error, details?: any, opts?: ILogMessageOptions): void;
+``` 
+
+### Added
+* [PCM-1766](https://inindca.atlassian.net/browse/PCM-1766) – Add log formatters
 
 # [v3.0.0](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v2.0.0...v3.0.0)
 ### BREAKING CHANGES
