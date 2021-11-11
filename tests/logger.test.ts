@@ -173,6 +173,12 @@ describe('Logger', () => {
       addLogToSendSpy = jest.spyOn(logger['serverLogger'], 'addLogToSend').mockImplementation();
     });
 
+    it('should not pass undefined to secondary logger', () => {
+      const secondaryLoggerSpy = jest.spyOn(logger['secondaryLogger'], 'info');
+      logMessageFn('info', 'message', undefined, {});
+      expect(secondaryLoggerSpy).toHaveBeenCalledWith('message');
+    });
+
     it('should skip secondaryLogger', () => {
       /* with skipSecondaryLogger = true */
       warnSpy.mockReset();

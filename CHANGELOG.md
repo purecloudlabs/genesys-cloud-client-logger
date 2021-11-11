@@ -19,6 +19,9 @@ info (message: string | Error, details?: any, opts?: ILogMessageOptions): void;
 ### Added
 * [PCM-1766](https://inindca.atlassian.net/browse/PCM-1766) – Add log formatters
 
+### Fixed
+* [PCM-1641](https://inindca.atlassian.net/browse/PCM-1741) – secondary logger is no longer passed undefined for details
+
 # [v3.0.0](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v2.0.0...v3.0.0)
 ### BREAKING CHANGES
 * Renamed `ILoggerConfig` option `logTopic` to `appName` to stay more uniform with the addition of `originApp[Name|Version|Id]` fields (see **Added** below).
