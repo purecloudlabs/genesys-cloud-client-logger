@@ -124,9 +124,12 @@ export class Logger implements ILogger {
     if (!messageOptions.skipSecondaryLogger) {
       try {
         /* log to secondary logger (default is console) */
-        this.secondaryLogger[logLevel](message,
-          this.config.stringify ? stringify(details) : details
-        );
+        const params = [message];
+        if (typeof details !== 'undefined') {
+          params.push(this.config.stringify ? stringify(details) : details);
+        }
+
+        this.secondaryLogger[logLevel].apply(this, params as any);
       } catch (error) {
         /* don't let custom logger errors stop our logger */
         console.error('Error logging using custom logger passed into `genesys-cloud-client-logger`', { error, secondaryLogger: this.secondaryLogger, message, details, messageOptions });
