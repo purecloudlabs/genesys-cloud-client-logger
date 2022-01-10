@@ -129,6 +129,7 @@ export class Logger implements ILogger {
           params.push(this.config.stringify ? stringify(details) : details);
         }
 
+        /* eslint-disable-next-line prefer-spread */
         this.secondaryLogger[logLevel].apply(this.secondaryLogger, params as any);
       } catch (error) {
         /* don't let custom logger errors stop our logger */
