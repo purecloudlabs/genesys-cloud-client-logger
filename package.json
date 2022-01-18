@@ -11,11 +11,12 @@
   "scripts": {
     "clean": "rimraf dist",
     "start": "npm run build:dev && npm run test:server",
-    "build": "npm run clean && npm run build:es && npm run build:cjs && npm run build:web",
+    "build": "ts-node scripts/build.ts",
     "build:es": "tsc -p . --outDir ./dist/es --target es2015 --module es2015",
     "build:cjs": "tsc -p .",
-    "build:web": "webpack --env.production",
     "build:dev": "npm run clean && tsc -p . && webpack",
+    "build:cdn": "webpack --env.development && webpack --env.production",
+    "build:manifest": "ts-node scripts/build-cdn-with-manifest.ts",
     "lint": "eslint -c .eslintrc.js --ext .ts src",
     "lint:fix": "npm run lint -- --fix",
     "test": "npm run lint && npm run test:unit",
@@ -52,6 +53,7 @@
     "stupid-server": "^0.2.5",
     "ts-jest": "^25.4.0",
     "ts-loader": "^7.0.1",
+    "ts-node": "^10.4.0",
     "typescript": "^3.8.3",
     "webpack": "^4.46.0",
     "webpack-cli": "^3.3.11"

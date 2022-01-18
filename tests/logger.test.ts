@@ -79,6 +79,13 @@ describe('Logger', () => {
     });
   });
 
+  describe('VERSION', () => {
+    it('should return the VERSION (static and instance)', () => {
+      expect(Logger.VERSION).toBe('__GENESYS_CLOUD_CLIENT_LOGGER_VERSION__');
+      expect(logger.VERSION).toBe('__GENESYS_CLOUD_CLIENT_LOGGER_VERSION__');
+    });
+  });
+
   describe('setAccessToken()', () => {
     it('should update the access token', () => {
       expect(logger.config.accessToken).toBe(config.accessToken);
@@ -260,7 +267,7 @@ describe('Logger', () => {
 
   describe('defaultFormatter', () => {
     let spy: jest.SpyInstance;
-    
+
     beforeEach(() => {
       spy = jest.fn();
     });
@@ -290,7 +297,7 @@ describe('Logger', () => {
 
       expect(spy).toHaveBeenCalledWith('warn', `${msg}`, null, options);
     });
-    
+
     it('should set error details', () => {
       const e = new Error('bad things happen');
       const options = { skipServer: true };
@@ -312,18 +319,18 @@ describe('Logger', () => {
         return next();
       }
 
-      // we want to only log this to the secondary logger (usually the console) and not send this 
+      // we want to only log this to the secondary logger (usually the console) and not send this
       // specific log to the server
       if (message.includes('[confidential]')) {
         options.skipServer = true;
         return next(level, 'redacted', details, options);
       }
-    
+
       // we want to completely silence these messages
       if (message.includes('[top secret]')) {
         return;
       }
-    
+
       // this formatter doesn't want to do anything special with this log, send it to the next formatter
       next();
     }

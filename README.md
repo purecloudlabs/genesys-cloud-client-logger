@@ -5,8 +5,20 @@ See [CHANGELOG.md](CHANGELOG.md) for version updates.
 
 ### Install
 
+Using a package manager:
 ``` sh
 npm install genesys-cloud-client-logger
+# Or via yarn
+yarn add genesys-cloud-client-logger
+```
+
+Or directly from the CDN:
+``` html
+<!-- specify desired major version to receive minor and patch version updates -->
+<script src="https://apps.mypurecloud.com/genesys-cloud-client-logger/v4/genesys-cloud-client-logger.min.js"></script>
+
+<!-- OR, specify an exact version -->
+<script src="https://apps.mypurecloud.com/genesys-cloud-client-logger/v4.0.1/genesys-cloud-client-logger.min.js"></script>
 ```
 
 ### Basic Concept
@@ -151,8 +163,8 @@ some message I care about {...}
 ### How Formatters Work
 Formatters are a great tool to handle unique logging situations. For example, let's say
 you have an error that has the potential to expose or send information that is unfit to
-be exposed. In a formatter, you can choose to manipulate the message or details, do 
-nothing, or skip logging the message entirely. A formatter will be provided a `next` 
+be exposed. In a formatter, you can choose to manipulate the message or details, do
+nothing, or skip logging the message entirely. A formatter will be provided a `next`
 function in addition to the log message. If next is not called, the log will not be forwarded
 to downstream formatters and will not make it to the actual logger. Example:
 
@@ -164,7 +176,7 @@ function myCustomFormatter (
   options: ILogMessageOptions,
   next: NextFn
 ) {
-  // we want to only log this to the secondary logger (usually the console) and not send this 
+  // we want to only log this to the secondary logger (usually the console) and not send this
   // specific log to the server
   if (message.includes('[confidential]')) {
     options.skipServer = true;
