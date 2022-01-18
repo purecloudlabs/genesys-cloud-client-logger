@@ -128,15 +128,17 @@ webappPipeline {
         sh("""
           git tag ${version} ${commitSha}
           git push origin --tags
+
+          git checkout ${MAIN_BRANCH}
+          npm install --no-save semver
         """)
 
         // merge back into develop and prep next patch version
-        sh("""
-          git checkout ${MAIN_BRANCH}
-          CURRENT_VERSION=$(node -e "console.log(require('./package.json').version)")
-          npm install --no-save semver
-          NEXT_VERSION=$(node -e "console.log(require('semver').inc('${CURRENT_VERSION}', 'patch'))")
 
+        def CURRENT_VERSION = sh(script: "node -e \"console.log(require('./package.json').version)\"", returnStdout: true).trim()
+        def NEXT_VERSION = sh(script: "node -e \"console.log(require('semver').inc('${CURRENT_VERSION}', 'patch'))\"", returnStdout: true).trim()
+
+        sh("""
           printf "Merging ${MAIN_BRANCH} to ${DEVELOP_BRANCH}..\n"
           git checkout ${DEVELOP_BRANCH}
           git pull --ff-only
