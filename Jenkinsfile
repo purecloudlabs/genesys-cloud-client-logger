@@ -89,12 +89,18 @@ webappPipeline {
         echo "VERSION      : ${env.VERSION}"
       """)
 
+      def packageJsonPath = "./package.json"
       def tag = ""
 
       // if not MAIN branch, then we need to adjust the verion in the package.json
       if (!isMain()) {
+        // TODO: find out how to get this from the pipeline
+
+        // save a copy of the original package.json
+        sh("cp ${packageJsonPath} ${packageJsonPath}.orig")
+
         // load the package.json version
-        def packageJson = readJSON(file: "./package.json")
+        def packageJson = readJSON(file: packageJsonPath)
         def featureBranch = env.BRANCH_NAME
 
         // all feature branches default to --alpha
@@ -124,6 +130,9 @@ webappPipeline {
 
               cat ./package.json
               npm publish ${tag} # --dry-run
+
+              # move original package.json back
+              cp ${packageJsonPath}.orig ${packageJsonPath}
           """)
       }
 
