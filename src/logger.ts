@@ -11,6 +11,14 @@ export class Logger implements ILogger {
   private serverLogger!: ServerLogger;
   private secondaryLogger: ILogger;
 
+  /* eslint-disable @typescript-eslint/naming-convention */
+  static VERSION = '__GENESYS_CLOUD_CLIENT_LOGGER_VERSION__';
+
+  get VERSION () {
+    return Logger.VERSION;
+  }
+  /* eslint-enable @typescript-eslint/naming-convention */
+
   constructor (config: ILoggerConfig) {
     Object.defineProperty(this, 'clientId', {
       value: v4(),

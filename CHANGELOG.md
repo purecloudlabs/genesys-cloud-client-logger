@@ -4,10 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-# [Unreleased](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.0.0...HEAD)
+# [Unreleased](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.0.2...HEAD)
 
+# [v4.0.2](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.0.1...v4.0.2)
+### Changed
+* [PCM-1791](https://inindca.atlassian.net/browse/PCM-1791) – migrated to new build pipeline. This repo now uses _gitflow_ to manage development, release, and feature branches.
 
-# [v4.0.0](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v3.0.0...v4.0.0)
+### Added
+* Added static and instance `logger.VERSION` methods.
+* Added CDN urls for major and exact version (see the **Install** section of the `README.md`)
+
+# [v4.0.1](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.0.0...v4.0.1)
 ### Fixed
 * [PCM-1786](https://inindca.atlassian.net/browse/PCM-1786) – fixed infinite recursion if an instance of the ClientLogger is passed
   into another instance of the ClientLogger as `options.logger`.

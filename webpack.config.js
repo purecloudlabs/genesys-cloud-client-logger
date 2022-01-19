@@ -1,8 +1,17 @@
 const path = require('path');
 
+const files = {
+  filename: 'genesys-cloud-client-logger.js',
+  filenameMap: 'genesys-cloud-client-logger.js.map',
+  filenameMin: 'genesys-cloud-client-logger.min.js',
+  filenameMinMap: 'genesys-cloud-client-logger.min.js.map'
+};
+
+const outDir = 'dist'
+
 module.exports = (env) => {
   const minimize = env && env.production;
-  const filename = `genesys-cloud-client-logger${minimize ? '.min' : ''}.js`;
+  const filename = minimize ? files.filenameMin : files.filename;
   const mode = minimize ? 'production' : 'development';
 
   console.log(`build mode: ${mode}`);
@@ -16,7 +25,7 @@ module.exports = (env) => {
     },
     devtool: 'source-map',
     output: {
-      path: path.resolve(__dirname, 'dist'),
+      path: path.resolve(__dirname, outDir),
       filename,
       library: 'GenesysCloudClientLogger',
       libraryTarget: 'umd',
@@ -44,3 +53,6 @@ module.exports = (env) => {
     }
   };
 };
+
+module.exports.files = files;
+module.exports.outDir = outDir;
