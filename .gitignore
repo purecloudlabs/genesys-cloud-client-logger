@@ -1,9 +1,12 @@
 node_modules
+static-asset-bundle
 
 # IDE - VSCode
 !.vscode/launch.json
 
 .ignore
+.npmrc
+.DS_Store
 .history/*
 dist
 coverage/
