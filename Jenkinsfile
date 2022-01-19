@@ -92,12 +92,12 @@ webappPipeline {
       def packageJsonPath = "./package.json"
       def tag = ""
 
+      // save a copy of the original package.json
+      sh("cp ${packageJsonPath} ${packageJsonPath}.orig")
+
       // if not MAIN branch, then we need to adjust the verion in the package.json
       if (!isMain()) {
         // TODO: find out how to get this from the pipeline
-
-        // save a copy of the original package.json
-        sh("cp ${packageJsonPath} ${packageJsonPath}.orig")
 
         // load the package.json version
         def packageJson = readJSON(file: packageJsonPath)
