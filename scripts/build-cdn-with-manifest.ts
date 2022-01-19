@@ -42,12 +42,12 @@ Object.values(files).forEach(file => {
 });
 
 /* create and write manifest (note: these are the only fields the pipeline uses) */
+const manifestPath = `${outDir}/manifest.json`;
 const manifest = {
   name: APP_NAME,
   version: VERSION,
-  indexFiles: indexFiles.sort().reverse()
+  indexFiles: indexFiles.sort().reverse().map(file => ({ file }))
 };
-const manifestPath = `${outDir}/manifest.json`;
 
 FS.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2), { encoding: 'utf8' });
-console.log('Wrote manifest:', manifest);
+console.log(`Wrote ${manifestPath}:`, manifest);
