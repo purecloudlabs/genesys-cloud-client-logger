@@ -21,6 +21,9 @@ Or directly from the CDN:
 <script src="https://apps.mypurecloud.com/genesys-cloud-client-logger/v4.0.1/genesys-cloud-client-logger.min.js"></script>
 ```
 
+> Note: the **major** and **exact** versions were added in `v4.0.2`. The version hosted at `.../genesys-cloud-client-logger/genesys-cloud-client-logger.min.js`
+> will always remain as `v4.0.1` to avoid breaking changes. However, it is strongly recommended that you upgrade to use a major version URL.
+
 ### Basic Concept
 Each Logger instance will have it's own configuration meaning you can have multiple apps using their own individual loggers. One thing to note is the loggers
 will share a "log-uploader" for each given `url`. For example, if `app1` and `app2` both POST logs to the same endpoint, they will have their own logger and
