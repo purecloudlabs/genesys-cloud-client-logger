@@ -96,6 +96,8 @@ webappPipeline {
         // load the package.json version
         def packageJson = readJSON(file: "./package.json")
         def featureBranch = env.BRANCH_NAME
+
+        // all feature branches default to --alpha
         tag = "--tag alpha"
 
         if (isRelease()) {
@@ -114,10 +116,16 @@ webappPipeline {
         writeFile(text: new JsonBuilder(packageJson).toPrettyString(), file: './package.json')
       }
 
-      sh("""
-        cat ./package.json
-        npm publish ${tag} # --dry-run
-      """)
+      withCredentials([string(credentialsId: constants.credentials.npm, variable: 'token')]) {
+          sh("""
+              rm -f ~/.npmrc
+              echo "ca=null" > ~/.npmrc
+              echo "//registry.npmjs.org/:_authToken=${token}" >> ~/.npmrc
+
+              cat ./package.json
+              npm publish ${tag} # --dry-run
+          """)
+      }
 
       // tag, back merge, and prep the next patch verion
       if (isMain()) {
@@ -130,7 +138,7 @@ webappPipeline {
           git push origin --tags
 
           git checkout ${MAIN_BRANCH}
-          npm install --no-save semver
+          npm install --no-save semver@7
         """)
 
         // merge back into develop and prep next patch version
