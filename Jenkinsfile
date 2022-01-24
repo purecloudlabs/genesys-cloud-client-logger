@@ -166,7 +166,8 @@ webappPipeline {
                     gitFunctions.mergeBackAndPrep(
                       MAIN_BRANCH,
                       DEVELOP_BRANCH,
-                      'patch'
+                      'patch',
+                      false
                     )
                 }
             }
