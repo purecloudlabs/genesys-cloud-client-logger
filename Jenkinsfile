@@ -1,6 +1,6 @@
 import groovy.json.JsonBuilder
 
-@Library('pipeline-library') _
+@Library('pipeline-library@COMUI-857') _
 
 def MAIN_BRANCH = 'fake-main'
 def DEVELOP_BRANCH = 'fake-develop'
