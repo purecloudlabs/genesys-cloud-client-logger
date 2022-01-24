@@ -152,7 +152,7 @@ webappPipeline {
                     ])
 
                     gitFunctions.tagCommit(
-                      "v${version}",
+                      "v${version}-${env.BUILD_NUMBER}-testing",
                       gitFunctions.getCurrentCommit(),
                       false
                     )
