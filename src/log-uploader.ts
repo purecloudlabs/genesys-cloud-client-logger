@@ -24,12 +24,13 @@ export const getOrCreateLogUploader = (url: string, debugMode = false): LogUploa
 };
 
 export class LogUploader {
+  sendQueue: IQueueItem[] = [];
+
   private hasPendingRequest = false;
-  private sendQueue: IQueueItem[] = [];
 
   constructor (private url: string, private debugMode: boolean = false) { }
 
-  async postLogsToEndpoint (requestParams: ISendLogRequest): Promise<any> {
+  postLogsToEndpoint (requestParams: ISendLogRequest): Promise<any> {
     const deferred = getDeferred();
     this.sendQueue.push({ requestParams, deferred });
     this.sendNextQueuedLogToServer();
@@ -41,22 +42,33 @@ export class LogUploader {
     return deferred.promise;
   }
 
-  async postLogsToEndpointInstantly (requestParams: ISendLogRequest): Promise<any> {
+  postLogsToEndpointInstantly (requestParams: ISendLogRequest): Promise<any> {
     this.debug('sending request instantly', { requestParams, sendQueue: this.sendQueue.map(i => i.requestParams) });
 
     return this.sendPostRequest(requestParams);
   }
 
-  sendEntireQueue (): void {
+  sendEntireQueue (): Promise<any>[] {
     this.debug('sending all queued requests instantly to clear out sendQueue', {
       sendQueue: this.sendQueue.map(i => i.requestParams)
     });
 
+    const promises: Promise<any>[] = [];
     let queueItem: IQueueItem | undefined;
     /* eslint-disable-next-line no-cond-assign */
     while (queueItem = this.sendQueue.shift()) {
-      this.postLogsToEndpoint(queueItem.requestParams);
+      promises.push(
+        this.postLogsToEndpointInstantly(queueItem.requestParams)
+      );
     }
+
+    /* don't want this to be async because this is called from the window 'unload' event */
+    return promises;
+  }
+
+  resetSendQueue () {
+    this.debug('reseting send queue without sending currently queued data', { queueLength: this.sendQueue.length });
+    this.sendQueue = [];
   }
 
   private async sendNextQueuedLogToServer (): Promise<void> {

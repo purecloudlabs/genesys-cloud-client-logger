@@ -4,8 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-# [Unreleased](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.0.2...HEAD)
+# [Unreleased](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.1.0...HEAD)
 
+# [v4.1.0](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.0.2...v4.1.0)
+### Added
+* [PCM-1833](https://inindca.atlassian.net/browse/PCM-1833) – Added the ability to stop/stop server logging. See `README` for more information.
+    * **New functions**
+        * `startServerLogging (): void;`
+        * `stopServerLogging (): void;`
+        * `sendAllLogsInstantly (): Promise<any>[]`
+    * **New events**
+        * `logger.on('onError', (error: any) => { });`
+        * `logger.on('onStart', () => { });`
+        * `logger.on('onStop', (reason: StopReason) => { });`
 # [v4.0.2](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.0.1...v4.0.2)
 ### Changed
 * [PCM-1791](https://inindca.atlassian.net/browse/PCM-1791) – migrated to new build pipeline. This repo now uses _gitflow_ to manage development, release, and feature branches.

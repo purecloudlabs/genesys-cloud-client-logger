@@ -102,9 +102,9 @@ describe('LogUploader', () => {
   });
 
   describe('sendEntireQueue()', () => {
-    it('should send the entire sendQueue', () => {
+    it('should send the entire sendQueue', async () => {
       const debugSpy = jest.spyOn(logUploader, 'debug' as any);
-      const postLogsToEndpointSpy = jest.spyOn(logUploader, 'postLogsToEndpoint' as any).mockResolvedValue(true);
+      const postLogsToEndpointInstantlySpy = jest.spyOn(logUploader, 'postLogsToEndpointInstantly' as any).mockResolvedValue(true);
       const requestParams1: ISendLogRequest = {
         accessToken: 'securely',
         app: {
@@ -123,19 +123,22 @@ describe('LogUploader', () => {
         traces: [{ topic: 'sdk', level: 'info', message: 'log this a second time' }]
       };
 
-      logUploader['sendQueue'] = [
+      logUploader.sendQueue = [
         { requestParams: requestParams1 } as any,
         { requestParams: requestParams2 } as any,
       ];
 
-      logUploader.sendEntireQueue();
+      const promises = logUploader.sendEntireQueue();
 
       expect(debugSpy).toHaveBeenCalledWith('sending all queued requests instantly to clear out sendQueue', {
         sendQueue: [requestParams1, requestParams2]
       });
 
-      expect(postLogsToEndpointSpy).toHaveBeenNthCalledWith(1, requestParams1);
-      expect(postLogsToEndpointSpy).toHaveBeenNthCalledWith(2, requestParams2);
+      /* should fire these without having to await anything */
+      expect(postLogsToEndpointInstantlySpy).toHaveBeenNthCalledWith(1, requestParams1);
+      expect(postLogsToEndpointInstantlySpy).toHaveBeenNthCalledWith(2, requestParams2);
+
+      await Promise.all(promises);
     });
   });
 
@@ -163,6 +166,16 @@ describe('LogUploader', () => {
       expect(logs.isDone()).toBe(true);
 
       nock.restore();
+    });
+  });
+
+  describe('resetSendQueue()', () => {
+    it('should clear sendQueue', () => {
+      logUploader['sendQueue'] = [{data: 'to send'} as any];
+
+      logUploader.resetSendQueue();
+
+      expect(logUploader['sendQueue'].length).toBe(0);
     });
   });
 

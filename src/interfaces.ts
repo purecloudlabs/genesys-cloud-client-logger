@@ -48,6 +48,13 @@ export interface ILoggerConfig {
    */
   initializeServerLogging?: boolean;
   /**
+   * If set to true, logs will not start sending to the server
+   * until `logger.startServerLogging()` is called.
+   *
+   * This will have no effect if `initializeServerLogging = false`.
+   */
+  startServerLoggingPaused?: boolean;
+  /**
    * logs at this level or high get sent to the server. defaults to 'info'
    */
   logLevel?: LogLevel;
@@ -81,7 +88,7 @@ export interface ILoggerConfig {
    * next(level, message, details, options) - sends message to the next formatter with the specified params
    * not calling next() at all - don't log the message
    */
-  formatters?: LogFormatterFn[]
+  formatters?: LogFormatterFn[];
 }
 
 export interface ILogger {
@@ -143,6 +150,13 @@ export interface ILogger {
 
 export type LogLevel = keyof ILogger;
 
+export interface LoggerEvents {
+  onError: any;
+  onStart: void;
+  onStop: StopReason;
+}
+
+export type StopReason = '401' | '404' | 'force';
 export interface ITrace {
   topic: string;
   level: string;

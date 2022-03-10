@@ -1,15 +1,18 @@
+import { EventEmitter } from 'events';
 import { v4 } from 'uuid';
 import stringify from 'safe-json-stringify';
 
-import { ILoggerConfig, LogLevel, ILogger, LogFormatterFn } from './interfaces';
+import { ILoggerConfig, LogLevel, ILogger, LogFormatterFn, StopReason, LoggerEvents } from './interfaces';
 import { ServerLogger } from './server-logger';
 import { ILogMessageOptions, NextFn } from '.';
+import StrictEventEmitter from 'strict-event-emitter-types/types/src';
 
-export class Logger implements ILogger {
+export class Logger extends (EventEmitter as { new(): StrictEventEmitter<EventEmitter, LoggerEvents> }) implements ILogger {
   declare readonly clientId: string;
   config: ILoggerConfig;
   private serverLogger!: ServerLogger;
   private secondaryLogger: ILogger;
+  private stopReason?: StopReason;
 
   /* eslint-disable @typescript-eslint/naming-convention */
   static VERSION = '__GENESYS_CLOUD_CLIENT_LOGGER_VERSION__';
@@ -20,6 +23,7 @@ export class Logger implements ILogger {
   /* eslint-enable @typescript-eslint/naming-convention */
 
   constructor (config: ILoggerConfig) {
+    super();
     Object.defineProperty(this, 'clientId', {
       value: v4(),
       writable: false
@@ -46,10 +50,19 @@ export class Logger implements ILogger {
     if (this.config.initializeServerLogging !== false) {
       this.serverLogger = new ServerLogger(this);
     }
+
+    if (this.config.startServerLoggingPaused) {
+      this.stopServerLogging();
+    }
   }
 
   setAccessToken (token: string): void {
     this.config.accessToken = token;
+
+    /* if we stopped because of a 401, we will try to start again */
+    if (this.stopReason === '401') {
+      this.startServerLogging();
+    }
   }
 
   log (message: string | Error, details?: any, opts?: ILogMessageOptions): void {
@@ -70,6 +83,53 @@ export class Logger implements ILogger {
 
   error (message: string | Error, details?: any, opts?: ILogMessageOptions): void {
     this.formatMessage('error', message, details, opts);
+  }
+
+  /**
+   * Start sending logs to the server. Only applies if
+   * the logger instance was configured with server logging.
+   * @returns void
+   */
+  startServerLogging (): void {
+    this.stopReason = undefined;
+
+    if (!this.serverLogger) {
+      return this.warn(
+        '`startServerLogging` called but the logger instance is not configured to ' +
+        'send logs to the server. Ignoring call to start sending logs to server.',
+        undefined,
+        { skipServer: true }
+      );
+    }
+
+    this.emit('onStart');
+  }
+
+  /**
+   * Stop sending logs to the server. Note; this will clear
+   * any items that are currently in the buffer. If you wish
+   * to send any currently pending log items, use
+   * `sendAllLogsInstantly()` before stopping the server loggin.
+   *
+   * @param reason optional; default `'force'`
+   * @returns void
+   */
+  stopServerLogging (reason: StopReason = 'force'): void {
+    /* we never want to override a force stop */
+    if (this.stopReason === 'force' && reason !== 'force') {
+      return;
+    }
+    this.stopReason = reason;
+    this.emit('onStop', reason);
+  }
+
+  /**
+   * Force send all pending log items to the server.
+   *
+   * @returns an array of HTTP request promises
+   */
+  sendAllLogsInstantly (): Promise<any>[] {
+    return this.serverLogger?.sendAllLogsInstantly() || [];
   }
 
   private formatMessage (level: LogLevel, message: string | Error, details?: any, opts?: ILogMessageOptions): void {
@@ -148,6 +208,7 @@ export class Logger implements ILogger {
     /* log to the server */
     if (
       !messageOptions.skipServer &&
+      !this.stopReason &&
       this.serverLogger &&
       this.logRank(logLevel) >= this.logRank(this.config.logLevel)
     ) {
