@@ -85,8 +85,10 @@ module.exports = {
     "@typescript-eslint/no-use-before-define": "off",
     "@typescript-eslint/no-var-requires": "error",
     "@typescript-eslint/prefer-for-of": "error",
-    "@typescript-eslint/prefer-function-type": "error",
+    "@typescript-eslint/prefer-function-type": "warn",
     "@typescript-eslint/prefer-namespace-keyword": "error",
+    "@typescript-eslint/restrict-template-expressions": "warn",
+    "@typescript-eslint/no-unnecessary-type-assertion": "warn",
     "@typescript-eslint/triple-slash-reference": [
       "error",
       {
@@ -97,7 +99,7 @@ module.exports = {
     ],
     "@typescript-eslint/unified-signatures": "error",
     "complexity": "off",
-    "constructor-super": "error",
+    "constructor-super": "warn",
     "dot-notation": "error",
     "eqeqeq": [
       "error",

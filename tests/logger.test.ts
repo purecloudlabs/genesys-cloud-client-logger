@@ -31,6 +31,7 @@ describe('Logger', () => {
       expect(logger['serverLogger'] instanceof ServerLogger).toBe(true);
       expect(logger.config.logger).toBeUndefined();
       expect(logger['secondaryLogger']).toBe(console);
+      expect(logger['stopReason']).toBeUndefined();
     });
 
     it('should shallow copy passed in config and not store logger in the config', () => {
@@ -48,6 +49,14 @@ describe('Logger', () => {
       logger = new Logger(config);
 
       expect(logger.config.logLevel).toBe('debug');
+    });
+
+    it('should start paused', () => {
+      config.startServerLoggingPaused = true;
+
+      logger = new Logger(config);
+
+      expect(logger['stopReason']).toBe('force');
     });
 
     it('should warn for invalid log level and set to "info"', () => {
@@ -91,6 +100,79 @@ describe('Logger', () => {
       expect(logger.config.accessToken).toBe(config.accessToken);
       logger.setAccessToken('new-token');
       expect(logger.config.accessToken).toBe('new-token');
+    });
+
+    it('should start sending logs again if it stopped because of a 401 error', () => {
+      jest.spyOn(logger, 'startServerLogging');
+      logger['stopReason'] = '401';
+
+      logger.setAccessToken('new-token');
+      expect(logger.startServerLogging).toHaveBeenCalled();
+    });
+  });
+
+  describe('startServerLogging()', () => {
+    it('should clear the stopReason and emit the start event', () => {
+      jest.spyOn(logger, 'emit');
+      logger['stopReason'] = 'force';
+
+      logger.startServerLogging();
+
+      expect(logger['stopReason']).toBeUndefined();
+      expect(logger.emit).toHaveBeenCalledWith('onStart');
+    });
+
+    it('should log a warning if serverLogging was not initialized and not emit an event', () => {
+      jest.spyOn(logger, 'emit');
+      jest.spyOn(logger, 'warn');
+
+      delete logger['serverLogger'];
+
+      logger.startServerLogging();
+
+      expect(logger.emit).not.toHaveBeenCalled();
+      expect(logger.warn).toHaveBeenCalledWith(
+        expect.stringContaining('`startServerLogging` called but the logger instance is not configured'),
+        undefined,
+        { skipServer: true }
+      );
+    });
+  });
+
+  describe('stopServerLogging()', () => {
+    it('should set the stopReason and emit it', () => {
+      const stopReason = '404';
+      jest.spyOn(logger, 'emit');
+
+      logger.stopServerLogging(stopReason);
+
+      expect(logger['stopReason']).toBe(stopReason);
+      expect(logger.emit).toHaveBeenCalledWith('onStop', stopReason);
+    });
+
+    it('should not change the reason from "force" if called with a different reason', () => {
+      jest.spyOn(logger, 'emit');
+      logger['stopReason'] = 'force';
+
+      logger.stopServerLogging('404');
+
+      expect(logger['stopReason']).toBe('force');
+      expect(logger.emit).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('sendAllLogsInstantly()', () => {
+    it('should call through to send logs if serverLogging is initialized', () => {
+      const spy = jest.spyOn(logger['serverLogger'], 'sendAllLogsInstantly').mockImplementation();
+      logger.sendAllLogsInstantly();
+      expect(spy).toHaveBeenCalled();
+    });
+
+    it('should not call through to send logs if serverLogging is NOT initialized', () => {
+      delete logger['serverLogger'];
+      const res = logger.sendAllLogsInstantly();
+      expect(res).toEqual([]);
+      expect('it does not throw "cannot get prop from undefined" error').toBeTruthy();
     });
   });
 
@@ -209,21 +291,27 @@ describe('Logger', () => {
     });
 
     it('should skip server logging', () => {
-      /* with skipServer = true */
+      jest.spyOn(console, 'error').mockImplementation();
+      /* because of skipServer === true */
       logMessageFn('warn', 'skip server please', null, { skipServer: true });
       expect(addLogToSendSpy).not.toHaveBeenCalled();
 
-      /* with skipServer = true */
+      /* because of not having a server logger */
       const serverLogger = logger['serverLogger'];
       delete logger['serverLogger'];
       logMessageFn('warn', 'skip server please', null, { skipServer: false });
       expect(addLogToSendSpy).not.toHaveBeenCalled();
       logger['serverLogger'] = serverLogger;
 
-
-      /* with skipServer = true */
+      /* because too low of a logLevel */
       logger.config.logLevel = 'error';
       logMessageFn('warn', 'skip server please', null, { skipServer: false });
+      expect(addLogToSendSpy).not.toHaveBeenCalled();
+
+      /* because logging is turned off */
+      logger['stopReason'] = '401';
+
+      logMessageFn('error', 'Bad things happened.', null, { skipServer: false });
       expect(addLogToSendSpy).not.toHaveBeenCalled();
     });
 
@@ -315,7 +403,7 @@ describe('Logger', () => {
       options: ILogMessageOptions,
       next: NextFn
     ) {
-      if (message instanceof Error){
+      if (message instanceof Error) {
         return next();
       }
 

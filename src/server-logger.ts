@@ -35,9 +35,19 @@ export class ServerLogger {
     this.logUploader = getOrCreateLogUploader(logger.config.url, logger.config.debugMode);
 
     window.addEventListener('unload', this.sendAllLogsInstantly.bind(this));
+
+    /* when we stop server logging, we need to clear everything out */
+    this.logger.on('onStop', (_reason) => {
+      this.debug('`onStop` received. Clearing logBuffer and sendQueue', {
+        logBuffer: this.logBuffer,
+        sendQueue: this.logUploader.sendQueue
+      });
+      this.logBuffer = [];
+      this.logUploader.resetSendQueue();
+    });
   }
 
-  public addLogToSend (logLevel: LogLevel, message: string, details?: any): void {
+  addLogToSend (logLevel: LogLevel, message: string, details?: any): void {
     if (!this.isInitialized) {
       return;
     }
@@ -116,6 +126,18 @@ export class ServerLogger {
     this.sendLogsToServer();
   }
 
+  sendAllLogsInstantly (): Promise<any>[] {
+    /* don't want this to be async because this is called from the window 'unload' event */
+    /* this will send any queued up requests */
+    return this.logUploader.sendEntireQueue()
+      .concat(
+        /* this will send any items in the buffer still */
+        this.logBuffer.map((item: ILogBufferItem) =>
+          this.logUploader.postLogsToEndpointInstantly(this.convertToRequestParams(item.traces.reverse()))
+        )
+      );
+  }
+
   private async sendLogsToServer (immediate = false): Promise<any> {
     if (!this.logBuffer.length) {
       /* clear timer */
@@ -150,21 +172,19 @@ export class ServerLogger {
       this.debug('calling logUploader.postLogsToEndpoint() with', { bufferItem, newLogBuffer: this.logBuffer });
       await this.logUploader.postLogsToEndpoint(this.convertToRequestParams(bufferItem.traces.reverse()));
     } catch (err) {
+      this.logger.emit('onError', err);
       this.logger.error('Error sending logs to server', err, { skipServer: true });
       /* no-op: the uploader will attempt reties. if the uploader throws, it means this log isn't going to make to the server */
+      const statusCode = `${(err as any)?.status}` as '401' | '404';
+
+      if (['401', '404'].includes(statusCode)) {
+        this.debug(`received a ${statusCode} from logUploader. stopping logging to server`);
+        this.logger.stopServerLogging(statusCode);
+      }
     } finally {
       /* setup the debounce again */
       this.sendLogsToServer();
     }
-  }
-
-  private sendAllLogsInstantly () {
-    this.logBuffer.forEach((item: ILogBufferItem) => {
-      this.logUploader.postLogsToEndpointInstantly(this.convertToRequestParams(item.traces.reverse()));
-    });
-
-    /* this will send any queued up requests */
-    return this.logUploader.sendEntireQueue();
   }
 
   private truncateLog (logLevel: LogLevel, log: ILogMessage): ITrace | null {

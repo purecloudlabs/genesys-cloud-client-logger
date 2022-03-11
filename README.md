@@ -98,6 +98,13 @@ interface ILoggerConfig {
    */
   initializeServerLogging?: boolean;
   /**
+   * If set to true, logs will not start sending to the server
+   * until `logger.startServerLogging()` is called.
+   *
+   * This will have no effect if `initializeServerLogging = false`.
+   */
+  startServerLoggingPaused?: boolean;
+  /**
    * logs at this level or high get sent to the server. defaults to 'info'
    */
   logLevel?: LogLevel;
@@ -214,3 +221,86 @@ logger.info('here is a [confidential] message');
 logger.info('here is a [top secret] message');
 // nothing will be sent to either logger
 ```
+
+### Pausing Server Logs
+In version 4.1.0, "pausing" server logs was introduced. This is useful in a few of the following scenarios (not an exhaustive list):
+
+1. `POST`ing logs to an endpoint returns a `401` or `404` status code.
+1. The consuming apps wants to be able to stop sending logs for a given period of time
+    and then start sending again.
+1. The consuming app wishes to construct a logger instance with server logging paused,
+    and then start sending logs further in the future.
+
+The declaration of the available functions are:
+
+``` ts
+class Logger {
+  /**
+   * Start sending logs to the server. Only applies if
+   * the logger instance was configured with server logging.
+   * @returns void
+   */
+  startServerLogging (): void;
+  /**
+   * Stop sending logs to the server. Note; this will clear
+   * any items that are currently in the buffer. If you wish
+   * to send any currently pending log items, use
+   * `sendAllLogsInstantly()` before stopping the server loggin.
+   *
+   * @param reason optional; default `'force'`
+   * @returns void
+   */
+  stopServerLogging (): void;
+  /**
+   * Force send all pending log items to the server.
+   *
+   * @returns an array of HTTP request promises
+   */
+  sendAllLogsInstantly (): Promise<any>[];
+  // ...
+}
+```
+
+And **available events**:
+``` ts
+/**
+ * any errors catch inside the logger. usually, these will be
+ * HTTP errors
+ */
+logger.on('onError', (error: any) => { });
+
+/**
+ * Fired when server logging starts again
+ *
+ * NOTE: this will not fire on construction
+ *  if `initializeServerLogger === true`
+ */
+logger.on('onStart', () => { });
+
+/**
+ * Fired when server logging is stopped.
+ *
+ * If `stopServerLogging()` was called,
+ *  the value will be `'force'`.
+ */
+logger.on('onStop', (reason: StopReason) => { });
+
+/* list of available reasons: `'force'` is default */
+type StopReason = '401' | '404' | 'force';
+```
+
+You can also leverage the config option `startServerLoggingPaused` (see above).
+
+A few notes:
+1. `stopServerLogging()` does a few things:
+    * it will _no longer_ queue up requests. In other words: it will not "retroactively"
+        send logs to the server while it was paused.
+    * it will clear out any queued up log items – meaning: any pending logs will be
+        dropped on the floor. If you want to send any pending items, call
+        `sendAllLogsInstantly()` before stopping the server logging.
+1. If the logger receives a `404`, it will automatically stop sending server logs.
+1. If the logger receives a `401`, it will automatically stop sending server logs. However,
+    once `setAccessToken()` is called, it will start sending logs again.
+    * NOTE: if `stopServerLogging()` was called, `setAccessToken()` will _NOT_
+      automatically start sending logs again. It will only start sending logs again if the
+      `401` was the last event received inside the logger.
