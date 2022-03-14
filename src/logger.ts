@@ -88,6 +88,7 @@ export class Logger extends (EventEmitter as { new(): StrictEventEmitter<EventEm
   /**
    * Start sending logs to the server. Only applies if
    * the logger instance was configured with server logging.
+   *
    * @returns void
    */
   startServerLogging (): void {
