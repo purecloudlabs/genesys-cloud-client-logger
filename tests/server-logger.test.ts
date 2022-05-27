@@ -1,4 +1,5 @@
 import stringify from 'safe-json-stringify';
+import flushPromises from "flush-promises";
 
 import { ILoggerConfig, ITrace, ILogMessage, ILogBufferItem } from '../src/interfaces';
 import { getOrCreateLogUploader } from '../src/log-uploader';
@@ -41,7 +42,7 @@ describe('ServerLogger', () => {
 
       try {
         new ServerLogger(logger);
-      } catch (e) {
+      } catch (e: any) {
         expect(e.message).toBe(expectedErrorMsg);
       }
 
@@ -51,7 +52,7 @@ describe('ServerLogger', () => {
 
       try {
         new ServerLogger(logger);
-      } catch (e) {
+      } catch (e: any) {
         expect(e.message).toBe(expectedErrorMsg);
       }
     });
@@ -237,7 +238,7 @@ describe('ServerLogger', () => {
 
     afterEach(async () => {
       jest.clearAllTimers();
-      await new Promise(res => setImmediate(res));
+      await flushPromises();
     });
 
     it('should do nothing if logBuffer is empty', async () => {

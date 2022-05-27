@@ -1,7 +1,8 @@
 import nock from 'nock';
-
-import { getOrCreateLogUploader, LogUploader } from '../src/log-uploader';
+import flushPromises from "flush-promises";
+import { getOrCreateLogUploader, IQueueItem, LogUploader } from '../src/log-uploader';
 import { ISendLogRequest } from '../src/interfaces';
+import { getDeferred } from '../src/utils';
 
 describe('getOrCreateLogUploader()', () => {
   it('should return unique log-uploaders for different urls', () => {
@@ -283,7 +284,7 @@ describe('LogUploader', () => {
 
       /* await 1st promise failure */
       jest.advanceTimersToNextTimer();
-      await new Promise(res => setImmediate(res));
+      await flushPromises();
 
       /* await 2nd promise success */
       jest.advanceTimersToNextTimer();
@@ -297,36 +298,39 @@ describe('LogUploader', () => {
 
     it('should throw error if sending logs fails for non-retriable error', async () => {
       /* load the queue */
-      const requestParams: ISendLogRequest = {
-        accessToken: 'securely',
-        app: {
-          appId: 'sdk',
-          appVersion: '1.2.3'
+      const queueItem: IQueueItem = {
+        requestParams: {
+          accessToken: 'securely',
+          app: {
+            appId: 'sdk',
+            appVersion: '1.2.3'
+          },
+          traces: [{ topic: 'sdk', level: 'info', message: 'log this' }],
         },
-        traces: [{ topic: 'sdk', level: 'info', message: 'log this' }]
+        deferred: getDeferred()
       };
       const fakeErrorResponse = { status: 401 };
       sendPostRequestSpy.mockRejectedValue(fakeErrorResponse);
 
-      const promise = logUploader.postLogsToEndpoint(requestParams);
+      logUploader['sendQueue'] = [ queueItem ];
+
+      expect.assertions(8);
+      // jest didn't like how we were rejecting promises as a side effect so we catch it and make sure it rejected then resolve it.
+      queueItem.deferred.promise = queueItem.deferred.promise.catch(() => {
+        expect(true).toBeTruthy();
+      });
+
+      const promise = logUploader['sendNextQueuedLogToServer']();
 
       expect(debugSpy).toHaveBeenCalledWith('sending logs to server', {
-        queueItem: requestParams,
+        queueItem: queueItem.requestParams,
         sendQueue: []
       });
-      expect(sendNextQueuedLogToServerSpy).toHaveBeenCalledTimes(1);
       expect(logUploader['hasPendingRequest']).toBe(true);
       expect(logUploader['sendQueue'].length).toBe(0);
 
-      /* await 2nd promise success */
-      jest.advanceTimersToNextTimer();
-      try {
-        await promise;
-        fail('should have thrown');
-      } catch (error) {
-        expect(debugSpy).toHaveBeenCalledWith('ERROR sending logs to server', { requestParams, error })
-      }
-
+      await queueItem.deferred.promise;
+      expect(debugSpy).toHaveBeenCalledWith('ERROR sending logs to server', expect.objectContaining({ requestParams: queueItem.requestParams }));
       expect(logUploader['hasPendingRequest']).toBe(false);
       expect(sendNextQueuedLogToServerSpy).toHaveBeenCalledTimes(2); // called again after initial request finished
       expect(sendPostRequestSpy).toHaveBeenCalledTimes(1); // only called once
