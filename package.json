@@ -1,6 +1,6 @@
 {
   "name": "genesys-cloud-client-logger",
-  "version": "4.1.1",
+  "version": "4.1.2",
   "description": "Common logger for genesys cloud client application to upload logs server",
   "main": "dist/src/index.js",
   "module": "dist/es/index.js",
