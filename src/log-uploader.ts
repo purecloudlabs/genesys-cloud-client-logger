@@ -1,10 +1,10 @@
-import request from 'superagent';
+import axios from 'axios';
 import { backOff } from 'exponential-backoff';
 
 import { IDeferred, ISendLogRequest } from './interfaces';
 import { getDeferred, deepClone } from './utils';
 
-interface IQueueItem {
+export interface IQueueItem {
   deferred: IDeferred;
   requestParams: ISendLogRequest;
 }
@@ -99,7 +99,7 @@ export class LogUploader {
     // return backOff(this.sendPostRequest.bind(this, queueItem.requestParams), {
     return backOff(() => this.sendPostRequest(queueItem.requestParams), {
       retry: (err: any): boolean => {
-        return err && err.status === 429;
+        return !!(err && err.status === 429);
       },
       numOfAttempts: 10,
       startingDelay: 0,
@@ -118,10 +118,19 @@ export class LogUploader {
 
   private sendPostRequest (requestParams: ISendLogRequest): Promise<any> {
     this.debug('issuing POST request', { requestParams });
-    return request.post(this.url)
-      .set('Authorization', `Bearer ${requestParams.accessToken}`)
-      .type('application/json; charset=UTF-8')
-      .send(requestParams);
+
+    const requestBody: Partial<ISendLogRequest> = { ...requestParams };
+    delete requestBody.accessToken;
+
+    return axios({
+      method: 'post',
+      url: this.url,
+      headers: {
+        'authorization': `Bearer ${requestParams.accessToken}`,
+        'content-type': 'application/json; charset=UTF-8'
+      },
+      data: requestBody
+    });
   }
 
   private debug (message: string, details?: any): void {

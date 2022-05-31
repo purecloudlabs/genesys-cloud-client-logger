@@ -79,7 +79,7 @@ describe('Logger', () => {
     });
 
     it('should unofficially still support `logTopic`', () => {
-      delete config.appName;
+      delete (config as any).appName;
       (config as any).logTopic = 'brad-pitt';
 
       logger = new Logger(config);
@@ -126,7 +126,7 @@ describe('Logger', () => {
       jest.spyOn(logger, 'emit');
       jest.spyOn(logger, 'warn');
 
-      delete logger['serverLogger'];
+      delete (logger as any)['serverLogger'];
 
       logger.startServerLogging();
 
@@ -169,7 +169,7 @@ describe('Logger', () => {
     });
 
     it('should not call through to send logs if serverLogging is NOT initialized', () => {
-      delete logger['serverLogger'];
+      delete (logger as any)['serverLogger'];
       const res = logger.sendAllLogsInstantly();
       expect(res).toEqual([]);
       expect('it does not throw "cannot get prop from undefined" error').toBeTruthy();
@@ -298,7 +298,7 @@ describe('Logger', () => {
 
       /* because of not having a server logger */
       const serverLogger = logger['serverLogger'];
-      delete logger['serverLogger'];
+      delete (logger as any)['serverLogger'];
       logMessageFn('warn', 'skip server please', null, { skipServer: false });
       expect(addLogToSendSpy).not.toHaveBeenCalled();
       logger['serverLogger'] = serverLogger;
