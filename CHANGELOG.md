@@ -5,6 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 # [Unreleased](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.1.1...HEAD)
+* [PCM-1992](https://inindca.atlassian.net/browse/PCM-1992) – Save logs that were unable to send so they can be sent next time we connect.
 
 # [v4.1.1](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.1.0...v4.1.1)
 ### Changed

@@ -184,8 +184,11 @@ export interface IDeferred<T = any> {
   resolve: (resolvedValue: T) => void;
 }
 
-export interface ISendLogRequest {
+export interface ISendLogRequest extends ILogRequest {
   accessToken: string;
+}
+
+export interface ILogRequest {
   app: {
     appId: string;
     appVersion: string;

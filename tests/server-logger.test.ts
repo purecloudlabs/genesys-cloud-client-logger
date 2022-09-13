@@ -384,8 +384,8 @@ describe('ServerLogger', () => {
 
       serverLogger['sendAllLogsInstantly']();
 
-      expect(postLogsToEndpointInstantlySpy).toHaveBeenNthCalledWith(1, serverLogger['convertToRequestParams'](bufferItem1.traces.reverse()));
-      expect(postLogsToEndpointInstantlySpy).toHaveBeenNthCalledWith(2, serverLogger['convertToRequestParams'](bufferItem2.traces.reverse()));
+      expect(postLogsToEndpointInstantlySpy).toHaveBeenNthCalledWith(1, serverLogger['convertToRequestParams'](bufferItem1.traces.reverse()), { saveOnFailure: true });
+      expect(postLogsToEndpointInstantlySpy).toHaveBeenNthCalledWith(2, serverLogger['convertToRequestParams'](bufferItem2.traces.reverse()), { saveOnFailure: true });
       expect(sendEntireQueueSpy).toHaveBeenCalled();
 
       await Promise.resolve();
