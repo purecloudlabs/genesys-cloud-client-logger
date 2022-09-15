@@ -133,7 +133,7 @@ export class ServerLogger {
       .concat(
         /* this will send any items in the buffer still */
         this.logBuffer.map((item: ILogBufferItem) =>
-          this.logUploader.postLogsToEndpointInstantly(this.convertToRequestParams(item.traces.reverse()))
+          this.logUploader.postLogsToEndpointInstantly(this.convertToRequestParams(item.traces.reverse()), { saveOnFailure: true })
         )
       );
   }
