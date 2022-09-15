@@ -1,8 +1,9 @@
 import nock from 'nock';
 import flushPromises from "flush-promises";
 import { getOrCreateLogUploader, IQueueItem, LogUploader } from '../src/log-uploader';
-import { ISendLogRequest } from '../src/interfaces';
+import { ILogRequest, ISendLogRequest } from '../src/interfaces';
 import { getDeferred } from '../src/utils';
+import { AxiosError } from 'axios';
 
 describe('getOrCreateLogUploader()', () => {
   it('should return unique log-uploaders for different urls', () => {
@@ -100,6 +101,52 @@ describe('LogUploader', () => {
       });
       expect(sendPostRequestSpy).toHaveBeenCalledWith(requestParams);
     });
+
+    it('should save logs on failure', async () => {
+      const error = { name: 'myError '};
+      jest.spyOn(logUploader as any, 'sendPostRequest').mockRejectedValue(error);
+      const saveSpy = logUploader.saveRequestForLater = jest.fn();
+
+      const request: ISendLogRequest = {
+        accessToken: '123easy',
+        app: {} as any,
+        traces: [ { level: 'info', message: 'my message', topic: 'testing' } ]
+      };
+
+      await expect(logUploader.postLogsToEndpointInstantly(request, { saveOnFailure: true })).rejects.toEqual(error);
+      expect(saveSpy).toHaveBeenCalled();
+    });
+
+    it('should not save logs on failure', async () => {
+      const error = { name: 'myError '};
+      jest.spyOn(logUploader as any, 'sendPostRequest').mockRejectedValue(error);
+      const saveSpy = logUploader.saveRequestForLater = jest.fn();
+
+      const request: ISendLogRequest = {
+        accessToken: '123easy',
+        app: {} as any,
+        traces: [ { level: 'info', message: 'my message', topic: 'testing' } ]
+      };
+
+      await expect(logUploader.postLogsToEndpointInstantly(request)).rejects.toEqual(error);
+      expect(saveSpy).not.toHaveBeenCalled();
+    });
+
+    it('should save logs without attempting to send them if offline', async () => {
+      const sendSpy = jest.spyOn(logUploader as any, 'sendPostRequest');
+      const saveSpy = logUploader.saveRequestForLater = jest.fn();
+      jest.spyOn(navigator, 'onLine', 'get').mockReturnValueOnce(false);
+
+      const request: ISendLogRequest = {
+        accessToken: '123easy',
+        app: {} as any,
+        traces: [ { level: 'info', message: 'my message', topic: 'testing' } ]
+      };
+
+      await logUploader.postLogsToEndpointInstantly(request);
+      expect(saveSpy).toHaveBeenCalled();
+      expect(sendSpy).not.toHaveBeenCalled();
+    });
   });
 
   describe('sendEntireQueue()', () => {
@@ -136,8 +183,8 @@ describe('LogUploader', () => {
       });
 
       /* should fire these without having to await anything */
-      expect(postLogsToEndpointInstantlySpy).toHaveBeenNthCalledWith(1, requestParams1);
-      expect(postLogsToEndpointInstantlySpy).toHaveBeenNthCalledWith(2, requestParams2);
+      expect(postLogsToEndpointInstantlySpy).toHaveBeenNthCalledWith(1, requestParams1, { saveOnFailure: true });
+      expect(postLogsToEndpointInstantlySpy).toHaveBeenNthCalledWith(2, requestParams2, { saveOnFailure: true });
 
       await Promise.all(promises);
     });
@@ -180,6 +227,138 @@ describe('LogUploader', () => {
     });
   });
 
+  describe('handleBackoffError()', () => {
+    it('should handle non axios errors', async () => {
+      const queueItem: IQueueItem = {
+        deferred: {
+          reject: jest.fn()
+        } as any,
+        requestParams: {
+          accessToken: '123easy',
+          app: { appId: 'myapp' } as any,
+          traces: []
+        }
+      };
+
+      const spy = logUploader['saveRequestForLater'] = jest.fn();
+
+      logUploader['handleBackoffError'](queueItem, new Error());
+
+      expect(spy).not.toHaveBeenCalled();
+    });
+
+    it('should save for later', async () => {
+      const queueItem: IQueueItem = {
+        deferred: {
+          reject: jest.fn()
+        } as any,
+        requestParams: {
+          accessToken: '123easy',
+          app: { appId: 'myapp' } as any,
+          traces: []
+        }
+      };
+
+      const error: AxiosError = {
+        request: { } as unknown,
+        response: {
+          status: 429
+        } as unknown
+      } as unknown as AxiosError;
+
+      const spy = logUploader['saveRequestForLater'] = jest.fn();
+
+      logUploader['handleBackoffError'](queueItem, error);
+
+      expect(spy).toHaveBeenCalled();
+    });
+  });
+
+  describe('getSavedRequests()', () => {
+    let getSpy: jest.SpyInstance;
+
+    beforeEach(() => {
+      getSpy = jest.spyOn(Storage.prototype, 'getItem');
+    });
+
+    afterEach(() => {
+      getSpy.mockRestore();
+    });
+
+    it('should return undefined if there\'s no saved messages', () => {
+      getSpy.mockReturnValue(undefined);
+      expect(logUploader['getSavedRequests']()).toBeUndefined();
+    });
+
+    it('should return saved messages', () => {
+      const logs: ILogRequest[] = [
+        {
+          app: {} as any,
+          traces: [ { level: 'info', message: 'my message', topic: 'testing' } ]
+        }
+      ];
+
+      getSpy.mockReturnValue(JSON.stringify(logs));
+      expect(logUploader['getSavedRequests']()).toEqual(logs);
+    });
+
+    it('should return undefined if saved messages are malformed', () => {
+      getSpy.mockReturnValue('{sldkj: whoops\'}');
+      expect(logUploader['getSavedRequests']()).toBeUndefined();
+    });
+  });
+
+  describe('saveRequestForLater()', () => {
+    let getSpy: jest.SpyInstance;
+    let setSpy: jest.SpyInstance;
+   
+    beforeEach(() => {
+      getSpy = jest.spyOn(Storage.prototype, 'getItem');
+      setSpy = jest.spyOn(Storage.prototype, 'setItem').mockImplementation();
+    });
+
+    afterEach(() => {
+      getSpy.mockRestore();
+      setSpy.mockRestore();
+    });
+
+    it('should work for first request', () => {
+      const request: ILogRequest =
+        {
+          app: {} as any,
+          traces: [ { level: 'info', message: 'my message', topic: 'testing' } ]
+        };
+
+      const sendRequest: ISendLogRequest = { accessToken: 'mytoken', ...request };
+
+      logUploader.getSavedRequests = jest.fn().mockReturnValue(undefined);
+
+      logUploader['saveRequestForLater'](sendRequest);
+
+      expect(setSpy).toHaveBeenCalledWith('gc_logger_requests', JSON.stringify([request]));
+    });
+
+    it('should work for subsequent requests', () => {
+      const existingRequest: ILogRequest = {
+        app: {} as any,
+        traces: [ { level: 'info', message: 'my message old', topic: 'testing1' } ]
+      };
+      
+      const request: ILogRequest = {
+        app: {} as any,
+        traces: [ { level: 'info', message: 'my message', topic: 'testing' } ]
+      };
+
+      const sendRequest: ISendLogRequest = { accessToken: 'mytoken', ...request };
+
+      logUploader.getSavedRequests = jest.fn().mockReturnValue([existingRequest]);
+
+      logUploader['saveRequestForLater'](sendRequest);
+
+      expect(setSpy).toHaveBeenCalledWith('gc_logger_requests', JSON.stringify([existingRequest, request]));
+    });
+  });
+
   describe('sendNextQueuedLogToServer()', () => {
     let sendNextQueuedLogToServerFn: typeof LogUploader.prototype['sendNextQueuedLogToServer'];
     let sendNextQueuedLogToServerSpy: jest.SpyInstance;
@@ -201,13 +380,13 @@ describe('LogUploader', () => {
     });
 
     it('should do nothing if request is pending', async () => {
-      logUploader['hasPendingRequest'] = true;
+      logUploader['pendingRequest'] = {} as any;
 
       await sendNextQueuedLogToServerFn();
 
       expect(debugSpy).toHaveBeenCalledWith('sendNextQueuedLogToServer() but not sending request', expect.any(Object));
 
-      logUploader['hasPendingRequest'] = false;
+      logUploader['pendingRequest'] = undefined;
     });
 
     it('should do nothing if sendQueue is empty', async () => {
@@ -239,14 +418,14 @@ describe('LogUploader', () => {
         sendQueue: []
       });
       expect(sendNextQueuedLogToServerSpy).toHaveBeenCalledTimes(1);
-      expect(logUploader['hasPendingRequest']).toBe(true);
+      expect(logUploader['pendingRequest']).toEqual(expect.objectContaining({ requestParams: requestParams }));
       expect(logUploader['sendQueue'].length).toBe(0);
 
       jest.advanceTimersToNextTimer();
 
       expect(await promise).toBe(fakeResponse);
       expect(debugSpy).toHaveBeenCalledWith('successfully sent logs to server', { requestParams, response: expect.any(Object) });
-      expect(logUploader['hasPendingRequest']).toBe(false);
+      expect(logUploader['pendingRequest']).toBeUndefined();
 
       expect(debugSpy).toHaveBeenCalledWith('queue item completed. removing from queue and resetting send queue', {
         queueItemRequestParams: requestParams, updatedSendQueue: []
@@ -265,8 +444,16 @@ describe('LogUploader', () => {
         },
         traces: [{ topic: 'sdk', level: 'info', message: 'log this' }]
       };
-      const fakeErrorResponse = { status: 429 };
-      const fakeSuccessfulResponse = { status: 200 };
+      const fakeErrorResponse = {
+        response: {
+          status: 429 
+        }
+      };
+      const fakeSuccessfulResponse = {
+        response: {
+          status: 200 
+        }
+      };
 
       sendPostRequestSpy
         .mockRejectedValueOnce(fakeErrorResponse) // fail once
@@ -279,7 +466,7 @@ describe('LogUploader', () => {
         sendQueue: []
       });
       expect(sendNextQueuedLogToServerSpy).toHaveBeenCalledTimes(1);
-      expect(logUploader['hasPendingRequest']).toBe(true);
+      expect(logUploader['pendingRequest']).toEqual(expect.objectContaining({ requestParams: requestParams }));
       expect(logUploader['sendQueue'].length).toBe(0);
 
       /* await 1st promise failure */
@@ -291,7 +478,7 @@ describe('LogUploader', () => {
       expect(await promise).toBe(fakeSuccessfulResponse);
 
       expect(debugSpy).toHaveBeenCalledWith('successfully sent logs to server', { requestParams, response: expect.any(Object) })
-      expect(logUploader['hasPendingRequest']).toBe(false);
+      expect(logUploader['pendingRequest']).toBeUndefined();
       expect(sendNextQueuedLogToServerSpy).toHaveBeenCalledTimes(2); // called again after initial request finished
       expect(sendPostRequestSpy).toHaveBeenCalledTimes(2); // called twice – first was failure
     });
@@ -309,7 +496,7 @@ describe('LogUploader', () => {
         },
         deferred: getDeferred()
       };
-      const fakeErrorResponse = { status: 401 };
+      const fakeErrorResponse = { status: 400 };
       sendPostRequestSpy.mockRejectedValue(fakeErrorResponse);
 
       logUploader['sendQueue'] = [ queueItem ];
@@ -326,12 +513,12 @@ describe('LogUploader', () => {
         queueItem: queueItem.requestParams,
         sendQueue: []
       });
-      expect(logUploader['hasPendingRequest']).toBe(true);
+      expect(logUploader['pendingRequest']).toBe(queueItem);
       expect(logUploader['sendQueue'].length).toBe(0);
 
       await queueItem.deferred.promise;
       expect(debugSpy).toHaveBeenCalledWith('ERROR sending logs to server', expect.objectContaining({ requestParams: queueItem.requestParams }));
-      expect(logUploader['hasPendingRequest']).toBe(false);
+      expect(logUploader['pendingRequest']).toBeUndefined()
       expect(sendNextQueuedLogToServerSpy).toHaveBeenCalledTimes(2); // called again after initial request finished
       expect(sendPostRequestSpy).toHaveBeenCalledTimes(1); // only called once
     });
@@ -378,14 +565,15 @@ describe('LogUploader', () => {
         sendQueue: []
       });
       expect(sendNextQueuedLogToServerSpy).toHaveBeenCalledTimes(3);
-      expect(logUploader['hasPendingRequest']).toBe(true);
+      expect(logUploader['pendingRequest']).toEqual(expect.objectContaining({ requestParams: requestParams1 }));
       expect(logUploader['sendQueue'].length).toBe(2); // 2 in the queue
 
       jest.advanceTimersToNextTimer();
 
+      await promise1;
       /* await 1st request */
       expect(await promise1).toBe(fakeResponse);
-      expect(logUploader['hasPendingRequest']).toBe(true); // this will get set because we instantly start to send our next item
+      expect(logUploader['pendingRequest']).toEqual(expect.objectContaining({ requestParams: requestParams2 })); // this will get set because we instantly start to send our next item
 
       expect(debugSpy).toHaveBeenCalledWith('queue item completed. removing from queue and resetting send queue', {
         queueItemRequestParams: requestParams1, updatedSendQueue: [requestParams2, requestParams3]
@@ -409,7 +597,7 @@ describe('LogUploader', () => {
         sendQueue: []
       });
 
-      expect(logUploader['hasPendingRequest']).toBe(false);
+      expect(logUploader['pendingRequest']).toBeUndefined();
     });
   });
 
@@ -432,6 +620,23 @@ describe('LogUploader', () => {
       logUploader['debugMode'] = true;
       debugFn('message', { details: 'object' });
       expect(consoleLogSpy).toHaveBeenCalledWith('%c [DEBUG:log-uploader] message', 'color: #32a0a8', { details: 'object' });
+    });
+  });
+
+  describe('backoffFn', () => {
+    it('should queue up saved logs after successful send', async () => {
+      logUploader['sendPostRequest'] = jest.fn().mockResolvedValue(null);
+      const accessToken = '123abc';
+      const savedRequest1 = { app: { appId: '1' } };
+      const savedRequest2 = { app: { appId: '2' } };
+      logUploader['getSavedRequests'] = jest.fn().mockReturnValue([savedRequest1, savedRequest2]);
+
+      const queueSpy = logUploader['postLogsToEndpoint'] = jest.fn();
+
+      await logUploader['backoffFn']({accessToken, app: { appId: '23', appVersion: '1' }, traces: [] });
+
+      expect(queueSpy).toHaveBeenCalledWith({ accessToken, ...savedRequest1 });
+      expect(queueSpy).toHaveBeenCalledWith({ accessToken, ...savedRequest2 });
     });
   });
 });
