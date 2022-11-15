@@ -4,7 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-# [Unreleased](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.2.0...HEAD)
+# [Unreleased](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.2.1...HEAD)
+
+# [v4.2.1](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.2.0...v4.2.1)
+* [PCM-2031](https://inindca.atlassian.net/browse/PCM-2031) – Set the response type as 'text' for uploading logs so ff doesn't throw an error
 
 # [v4.2.0](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.1.1...v4.2.0)
 * [PCM-1992](https://inindca.atlassian.net/browse/PCM-1992) – Save logs that were unable to send so they can be sent next time we connect.
