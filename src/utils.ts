@@ -38,7 +38,11 @@ export const deepClone = function deepClone<T> (itemToBeCloned: T): T {
     if (typeof itemToBeCloned === 'object') {
       const clonedObject = { ...itemToBeCloned };
       for (const key in itemToBeCloned) {
-        clonedObject[key] = deepClone(itemToBeCloned[key]);
+        try {
+          clonedObject[key] = deepClone(itemToBeCloned[key]);
+        } catch (e) {
+          console.debug('WARN: Failed cloning key on object, ignoring', { key, object: itemToBeCloned });
+        }
       }
       return clonedObject;
     }
