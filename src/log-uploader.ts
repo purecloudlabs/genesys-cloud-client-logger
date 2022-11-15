@@ -211,6 +211,7 @@ export class LogUploader {
     return axios({
       method: 'post',
       url: this.url,
+      responseType: 'text',
       headers: {
         'authorization': `Bearer ${requestParams.accessToken}`,
         'content-type': 'application/json; charset=UTF-8'
