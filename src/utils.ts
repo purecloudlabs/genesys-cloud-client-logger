@@ -41,6 +41,7 @@ export const deepClone = function deepClone<T> (itemToBeCloned: T): T {
         try {
           clonedObject[key] = deepClone(itemToBeCloned[key]);
         } catch (e) {
+          /* istanbul ignore next */
           console.debug('WARN: Failed cloning key on object, ignoring', { key, object: itemToBeCloned });
         }
       }
