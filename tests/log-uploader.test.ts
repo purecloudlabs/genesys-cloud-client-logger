@@ -4,6 +4,7 @@ import { getOrCreateLogUploader, IQueueItem, LogUploader } from '../src/log-uplo
 import { ILogRequest, ISendLogRequest } from '../src/interfaces';
 import { getDeferred } from '../src/utils';
 import { AxiosError } from 'axios';
+import { add, sub } from 'date-fns'
 
 describe('getOrCreateLogUploader()', () => {
   it('should return unique log-uploaders for different urls', () => {
@@ -446,12 +447,14 @@ describe('LogUploader', () => {
       };
       const fakeErrorResponse = {
         response: {
-          status: 429 
+          status: 429,
+          headers: {}
         }
       };
       const fakeSuccessfulResponse = {
         response: {
-          status: 200 
+          status: 200,
+          headers: {}
         }
       };
 
@@ -599,6 +602,81 @@ describe('LogUploader', () => {
 
       expect(logUploader['pendingRequest']).toBeUndefined();
     });
+
+    it('should set retryAfter property', async () => {
+      jest.useFakeTimers();
+      logUploader.sendQueue = [
+        {
+          deferred: {
+            promise: {
+              finally: jest.fn(),
+            },
+            reject: jest.fn()
+          }
+        } as any
+      ];
+
+      const err = new AxiosError();
+      err.response = {
+        headers: {
+          'retry-after': '120'
+        },
+        status: 429
+      } as any;
+
+      logUploader['backoffFn'] = jest.fn()
+        .mockRejectedValueOnce(err)
+        .mockResolvedValue({});
+
+      logUploader['sendNextQueuedLogToServer']();
+
+      jest.advanceTimersByTime(1000);
+      await flushPromises();
+
+      expect(logUploader['retryAfter']).toBeDefined();
+
+      jest.advanceTimersByTime(200000);
+      await flushPromises();
+    });
+
+    it('should set retryAfter property', async () => {
+      jest.useFakeTimers();
+      logUploader.sendQueue = [
+        {
+          deferred: {
+            promise: {
+              finally: jest.fn(),
+            },
+            reject: jest.fn()
+          }
+        } as any
+      ];
+
+      const err = new AxiosError();
+      err.response = {
+        headers: {
+          'retry-after': '120'
+        },
+        status: 429
+      } as any;
+
+      const date = logUploader['retryAfter'] = new Date();
+
+      logUploader['backoffFn'] = jest.fn()
+        .mockRejectedValueOnce(err)
+        .mockResolvedValue({});
+
+      logUploader['sendNextQueuedLogToServer']();
+
+      jest.advanceTimersByTime(1000);
+      await flushPromises();
+
+      expect(logUploader['retryAfter']).toBeDefined();
+      expect(logUploader['retryAfter']).not.toBe(date);
+
+      jest.advanceTimersByTime(200000);
+      await flushPromises();
+    });
   });
 
   describe('debug()', () => {
@@ -637,6 +715,48 @@ describe('LogUploader', () => {
 
       expect(queueSpy).toHaveBeenCalledWith({ accessToken, ...savedRequest1 });
       expect(queueSpy).toHaveBeenCalledWith({ accessToken, ...savedRequest2 });
+    });
+  });
+
+  describe('retryAfterTimerCheck()', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    it('should return immediately', async () => {
+      logUploader['retryAfter'] = undefined;
+      const spy = jest.spyOn(logUploader as any, 'retryAfterTimerCheck');
+
+      await logUploader['retryAfterTimerCheck']();
+
+      expect(spy).toHaveBeenCalledTimes(1);
+    });
+
+    it('should clear retryAfter date and resolve', async () => {
+      const spy = jest.spyOn(logUploader as any, 'retryAfterTimerCheck');
+      logUploader['retryAfter'] = sub(Date.now(), { seconds: 1 });
+
+      await logUploader['retryAfterTimerCheck']();
+
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(logUploader['retryAfter']).toBeUndefined();
+    });
+
+    it('should wait until retryAfter date, then resolve', async () => {
+      const spy = jest.spyOn(logUploader as any, 'retryAfterTimerCheck');
+      logUploader['retryAfter'] = add(Date.now(), { minutes: 1 });
+
+      logUploader['retryAfterTimerCheck']();
+      spy.mockReset();
+
+      jest.advanceTimersByTime(30000);
+      await flushPromises();
+      expect(spy).not.toHaveBeenCalled();
+      expect(logUploader['retryAfter']).toBeDefined();
+
+      jest.advanceTimersByTime(32000);
+      await flushPromises();
+      expect(spy).toHaveBeenCalled();
     });
   });
 });
