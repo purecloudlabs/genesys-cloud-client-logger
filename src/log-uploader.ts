@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import { backOff } from 'exponential-backoff';
-
+import { isAfter, add, differenceInMilliseconds } from 'date-fns';
 import { IDeferred, ILogRequest, ISendLogRequest } from './interfaces';
 import { getDeferred, deepClone } from './utils';
 
@@ -39,7 +39,7 @@ export const getOrCreateLogUploader = (url: string, debugMode = false): LogUploa
 
 export class LogUploader {
   sendQueue: IQueueItem[] = [];
-
+  private retryAfter?: Date;
   private pendingRequest?: IQueueItem;
 
   constructor (private url: string, private debugMode: boolean = false) { }
@@ -151,6 +151,14 @@ export class LogUploader {
         const status = err.response?.status;
         const code = err.code;
 
+        const newRetryAfter = err.response?.headers['retry-after'];
+        if (newRetryAfter) {
+          const newRetryAfterDate = add(new Date(), { seconds: parseInt(newRetryAfter, 10) });
+          if (!this.retryAfter || isAfter(newRetryAfterDate, this.retryAfter)) {
+            this.retryAfter = newRetryAfterDate;
+          }
+        }
+
         // we get a "ERR_NETWORK" in the case of a network blip failure. if this happens, we will want to try again.
         // this is akin to not getting a response at all
         return navigator.onLine && ((status && STATUS_CODES_TO_RETRY_IMMEDIATELY.includes(status)) || code === "ERR_NETWORK");
@@ -183,7 +191,35 @@ export class LogUploader {
     queueItem.deferred.reject({...error, id: "rejectionSpot1"});
   }
 
+  private async retryAfterTimerCheck (): Promise<undefined> {
+    if (!this.retryAfter) {
+      return;
+    }
+
+    // if we are past the designated retryAfter date, we are good
+    if (isAfter(Date.now(), this.retryAfter)) {
+      this.retryAfter = undefined;
+      return;
+
+      // else we need to wait *at least* until the new time and check again
+    } else {
+      const timeToWait = differenceInMilliseconds(this.retryAfter!, Date.now());
+
+      this.debug('Respecting "retry-after" response header, waiting to send request', { millisecondsToWait: timeToWait });
+      await new Promise(resolve => {
+        setTimeout(() => {
+          resolve(null);
+        }, timeToWait);
+      });
+
+      return this.retryAfterTimerCheck();
+    }
+  }
+
   private async backoffFn (requestParams: ISendLogRequest): Promise<AxiosResponse> {
+    // if we get a response with a Retry-After header, we want to wait for the time to elapse before we try again.
+    await this.retryAfterTimerCheck();
+
     const accessToken = requestParams.accessToken;
     const response = await this.sendPostRequest(requestParams);
 
