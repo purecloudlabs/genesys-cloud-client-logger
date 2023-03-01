@@ -4,7 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-# [Unreleased](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.2.2...HEAD)
+# [Unreleased](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.2.3...HEAD)
+# [v4.2.3](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.2.2...v4.2.3)
+### Fixed
+* [PCM-2088](https://inindca.atlassian.net/browse/PCM-2088) – Allow unique log uploaders (really only useful for internal reasons)
+
 # [v4.2.2](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.2.1...v4.2.2)
 ### Fixed
 * [PCM-2075](https://inindca.atlassian.net/browse/PCM-2075) – Respect the retry-after header returned by a 429 response.
