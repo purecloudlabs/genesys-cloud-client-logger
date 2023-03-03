@@ -639,7 +639,63 @@ describe('LogUploader', () => {
       await flushPromises();
     });
 
-    it('should set retryAfter property', async () => {
+    it('should set retryAfter property (xmlhttprequest)', async () => {
+      jest.useFakeTimers();
+      logUploader.sendQueue = [
+        {
+          deferred: {
+            promise: {
+              finally: jest.fn(),
+            },
+            reject: jest.fn()
+          }
+        } as any
+      ];
+
+      const err = new AxiosError();
+      err.response = {
+        getResponseHeader: () => '120',
+        status: 429
+      } as any;
+
+      logUploader['backoffFn'] = jest.fn()
+        .mockRejectedValueOnce(err)
+        .mockResolvedValue({});
+
+      logUploader['sendNextQueuedLogToServer']();
+
+      jest.advanceTimersByTime(1000);
+      await flushPromises();
+
+      expect(logUploader['retryAfter']).toBeDefined();
+
+      jest.advanceTimersByTime(200000);
+      await flushPromises();
+      jest.useRealTimers();
+    });
+
+    it('should handle undefined error', async () => {
+      logUploader.sendQueue = [
+        {
+          deferred: {
+            promise: {
+              finally: jest.fn(),
+            },
+            reject: jest.fn()
+          }
+        } as any
+      ];
+
+      const err = undefined;
+
+      logUploader['backoffFn'] = jest.fn()
+        .mockRejectedValueOnce(err)
+        .mockResolvedValue({});
+
+      await logUploader['sendNextQueuedLogToServer']();
+    });
+
+    it('should override existing retryAfter property', async () => {
       jest.useFakeTimers();
       logUploader.sendQueue = [
         {
@@ -676,6 +732,7 @@ describe('LogUploader', () => {
 
       jest.advanceTimersByTime(200000);
       await flushPromises();
+      jest.useRealTimers();
     });
   });
 
