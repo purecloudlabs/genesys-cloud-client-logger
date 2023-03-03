@@ -148,10 +148,12 @@ export class LogUploader {
     // return backOff(this.sendPostRequest.bind(this, queueItem.requestParams), {
     return backOff(() => this.backoffFn(queueItem.requestParams), {
       retry: (err: AxiosError): boolean => {
-        const status = err.response?.status;
-        const code = err.code;
+        const status = err?.response?.status;
+        const code = err?.code;
 
-        const newRetryAfter = err.response?.headers['retry-after'];
+        // This *should* be an axios error according to typings, but it appears this could be an AxiosError *or* and XmlHttpRequest
+        // we'll check both to be safe
+        const newRetryAfter = (err as AxiosError).response?.headers?.['retry-after'] || ((err as any).response as XMLHttpRequest)?.getResponseHeader?.('retry-after');
         if (newRetryAfter) {
           const newRetryAfterDate = add(new Date(), { seconds: parseInt(newRetryAfter, 10) });
           if (!this.retryAfter || isAfter(newRetryAfterDate, this.retryAfter)) {
