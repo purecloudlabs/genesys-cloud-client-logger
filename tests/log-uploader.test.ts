@@ -20,6 +20,13 @@ describe('getOrCreateLogUploader()', () => {
 
     expect(uploader1).toBe(uploader2);
   });
+
+  it('should return a unique uploader for the same url', () => {
+    const uploader1 = getOrCreateLogUploader('http://inindca.com');
+    const uploader2 = getOrCreateLogUploader('http://inindca.com', false, true);
+
+    expect(uploader1).not.toBe(uploader2);
+  });
 });
 
 describe('LogUploader', () => {

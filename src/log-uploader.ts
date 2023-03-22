@@ -25,7 +25,11 @@ export interface IQueueItem {
 
 const logUploaderMap = new Map<string, LogUploader>();
 
-export const getOrCreateLogUploader = (url: string, debugMode = false): LogUploader => {
+export const getOrCreateLogUploader = (url: string, debugMode = false, useUniqueLogUploader?: boolean): LogUploader => {
+  if (useUniqueLogUploader) {
+    return new LogUploader(url, debugMode);
+  }
+
   let uploader = logUploaderMap.get(url);
 
   /* if we don't have an uploader for this url, create one */

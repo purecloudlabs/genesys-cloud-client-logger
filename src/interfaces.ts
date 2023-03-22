@@ -48,6 +48,11 @@ export interface ILoggerConfig {
    */
   initializeServerLogging?: boolean;
   /**
+   * This only matters if you are using server logging. This will create a
+   * new log uploader instead of trying to reuse an existing one.
+   */
+  useUniqueLogUploader?: boolean;
+  /**
    * If set to true, logs will not start sending to the server
    * until `logger.startServerLogging()` is called.
    *
