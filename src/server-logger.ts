@@ -171,15 +171,15 @@ export class ServerLogger {
       // this.pendingHttpRequest = true;
       this.debug('calling logUploader.postLogsToEndpoint() with', { bufferItem, newLogBuffer: this.logBuffer });
       await this.logUploader.postLogsToEndpoint(this.convertToRequestParams(bufferItem.traces.reverse()));
-    } catch (err) {
+    } catch (err: any) {
       this.logger.emit('onError', err);
       this.logger.error('Error sending logs to server', err, { skipServer: true });
       /* no-op: the uploader will attempt reties. if the uploader throws, it means this log isn't going to make to the server */
-      const statusCode = `${(err as any)?.status}` as '401' | '404';
+      const statusCode = err?.response?.status as 401 | 404;
 
-      if (['401', '404'].includes(statusCode)) {
+      if ([401, 404].includes(statusCode)) {
         this.debug(`received a ${statusCode} from logUploader. stopping logging to server`);
-        this.logger.stopServerLogging(statusCode);
+        this.logger.stopServerLogging();
       }
     } finally {
       /* setup the debounce again */
