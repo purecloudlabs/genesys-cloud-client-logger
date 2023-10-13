@@ -354,7 +354,7 @@ describe('ServerLogger', () => {
 
       /* should emit the error, stop logging, reset queue, and clear out the logBuffer */
       expect(emitSpy).toHaveBeenCalledWith('onError', err);
-      expect(stopServerLoggingSpy).toHaveBeenCalledWith(err['status']);
+      expect(stopServerLoggingSpy).toHaveBeenCalledWith();
       expect(resetSendQueueSpy).toHaveBeenCalled();
       expect(serverLogger['logBuffer'].length).toBe(0);
     });
@@ -368,6 +368,57 @@ describe('ServerLogger', () => {
 
       await sendLogsToServerFn(true);
       expect('it does not throw an error checking for the "status" prop on an "undefined" error').toBeTruthy();
+    });
+
+    it('should check thre response object if status does not exist', async () => {
+      const bufferItem1: ILogBufferItem = { size: 0, traces: [{}] as any };
+      const bufferItem2: ILogBufferItem = { size: 0, traces: [{}] as any };
+      serverLogger['logBuffer'].push(bufferItem1);
+
+      const err = new Error('Whoops') as any;
+      err['status'] = undefined;
+      err.response = { status: '' };
+      err.response.status = 401;
+      postLogsToEndpointSpy.mockRejectedValue(err);
+      jest.spyOn(serverLogger['logger'], 'error').mockImplementation();
+      const emitSpy = jest.spyOn(logger, 'emit');
+      const stopServerLoggingSpy = jest.spyOn(logger, 'stopServerLogging');
+      const resetSendQueueSpy = jest.spyOn(serverLogger['logUploader'], 'resetSendQueue');
+
+      const req = sendLogsToServerFn(true);
+
+      serverLogger['logBuffer'].push(bufferItem2);
+
+      await req;
+
+      expect(emitSpy).toHaveBeenCalledWith('onError', err);
+      expect(stopServerLoggingSpy).toHaveBeenCalledWith();
+      expect(resetSendQueueSpy).toHaveBeenCalled();
+      expect(serverLogger['logBuffer'].length).toBe(0);
+    });
+    it('should use status if it exists', async () => {
+      const bufferItem1: ILogBufferItem = { size: 0, traces: [{}] as any };
+      const bufferItem2: ILogBufferItem = { size: 0, traces: [{}] as any };
+      serverLogger['logBuffer'].push(bufferItem1);
+
+      const err = new Error('Whoops') as any;
+      err['status'] = 401;
+      postLogsToEndpointSpy.mockRejectedValue(err);
+      jest.spyOn(serverLogger['logger'], 'error').mockImplementation();
+      const emitSpy = jest.spyOn(logger, 'emit');
+      const stopServerLoggingSpy = jest.spyOn(logger, 'stopServerLogging');
+      const resetSendQueueSpy = jest.spyOn(serverLogger['logUploader'], 'resetSendQueue');
+
+      const req = sendLogsToServerFn(true);
+
+      serverLogger['logBuffer'].push(bufferItem2);
+
+      await req;
+
+      expect(emitSpy).toHaveBeenCalledWith('onError', err);
+      expect(stopServerLoggingSpy).toHaveBeenCalledWith();
+      expect(resetSendQueueSpy).toHaveBeenCalled();
+      expect(serverLogger['logBuffer'].length).toBe(0);
     });
   });
 

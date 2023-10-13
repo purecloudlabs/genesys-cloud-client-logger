@@ -178,7 +178,7 @@ export class ServerLogger {
 
       /* TODO: figure out why the error structure changed and determine if this is necessary */
       const statusCode = err?.status
-      ? err?.status as 401 | 404 | '401' | '404'
+        ? err.status as 401 | 404 | '401' | '404'
         : err?.response?.status as 401 | 404 | '401' | '404';
 
       if ([401, 404, '401', '404'].includes(statusCode)) {

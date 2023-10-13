@@ -4,7 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-# [Unreleased](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/4.2.3...HEAD)
+# [Unreleased](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/4.2.5...HEAD)
+
+# [4.2.5](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.2.4...4.2.5)
+### Fixed
+* [PCM-2238](https://inindca.atlassian.net/browse/PCM-2238) - Made it so checks on the error object were looking for the right things and that we stop logging to the server on a 401.
+
 # [4.2.3](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.2.2...4.2.3)
 ### Fixed
 * [PCM-2075](https://inindca.atlassian.net/browse/PCM-2075) – Respect the retry-after header returned by a 429 response. Handle the case where axios returns an xmlhttprequest as the response object.
