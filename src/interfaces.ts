@@ -161,7 +161,7 @@ export interface LoggerEvents {
   onStop: StopReason;
 }
 
-export type StopReason = '401' | '404' | 'force';
+export type StopReason = 401 | 404 | '401' | '404' | 'force';
 export interface ITrace {
   topic: string;
   level: string;
