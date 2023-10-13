@@ -60,7 +60,7 @@ export class Logger extends (EventEmitter as { new(): StrictEventEmitter<EventEm
     this.config.accessToken = token;
 
     /* if we stopped because of a 401, we will try to start again */
-    if (this.stopReason === '401') {
+    if (this.stopReason == 401) {
       this.startServerLogging();
     }
   }
