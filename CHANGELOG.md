@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 * [PCM-2238](https://inindca.atlassian.net/browse/PCM-2238) - Made it so checks on the error object were looking for the right things and that we stop logging to the server on a 401.
 
+# [v4.2.4](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.2.3...v4.2.4)
+### Fixed
+* [PCM-2088](https://inindca.atlassian.net/browse/PCM-2088) – Allow unique log uploaders (really only useful for internal reasons)
+
 # [4.2.3](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.2.2...4.2.3)
 ### Fixed
 * [PCM-2075](https://inindca.atlassian.net/browse/PCM-2075) – Respect the retry-after header returned by a 429 response. Handle the case where axios returns an xmlhttprequest as the response object.
