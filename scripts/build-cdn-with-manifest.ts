@@ -34,8 +34,8 @@ Object.values(files).forEach(file => {
   const majorFile = `${majorVersion}/${file}`;
   const exactFile = `${exactVersion}/${file}`;
 
-  indexFiles.push(`/${majorFile}`);
-  indexFiles.push(`/${exactFile}`);
+  indexFiles.push(`${majorFile}`);
+  indexFiles.push(`${exactFile}`);
 
   copyFile(`${outDir}/${file}`, `${outDir}/${majorFile}`);
   copyFile(`${outDir}/${file}`, `${outDir}/${exactFile}`);
