@@ -22,7 +22,6 @@
     "test": "npm run lint && npm run test:unit",
     "test:unit": "jest --collectCoverage",
     "test:watch": "jest --watch --collectCoverage=false --runInBand",
-    "test:coverage": "jest --collectCoverage=true --runInBand",
     "test:server": "stupid-server -s"
   },
   "files": [
