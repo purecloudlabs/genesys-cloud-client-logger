@@ -4,7 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-# [Unreleased](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/4.2.5...HEAD)
+# [Unreleased](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/4.2.7...HEAD)
+
+# [4.2.7](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.2.6...4.2.7)
+### Fixed
+* [PCM-2262](https://inindca.atlassian.net/browse/PCM-2262) Fixed snyk vulnerability SNYK-JS-AXIOS-6032459
+
+# [4.2.6](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.2.5...4.2.6)
+### Fixed
+* [no-jira] Fixed snyk vulnerability
 
 # [4.2.5](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.2.4...4.2.5)
 ### Fixed
