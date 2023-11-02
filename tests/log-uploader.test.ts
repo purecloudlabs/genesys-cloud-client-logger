@@ -3,8 +3,9 @@ import flushPromises from "flush-promises";
 import { getOrCreateLogUploader, IQueueItem, LogUploader } from '../src/log-uploader';
 import { ILogRequest, ISendLogRequest } from '../src/interfaces';
 import { getDeferred } from '../src/utils';
-import { AxiosError } from 'axios';
+import axios, { AxiosError } from 'axios';
 import { add, sub } from 'date-fns'
+import AxiosMockAdapter from 'axios-mock-adapter';
 
 describe('getOrCreateLogUploader()', () => {
   it('should return unique log-uploaders for different urls', () => {
@@ -200,6 +201,9 @@ describe('LogUploader', () => {
 
   describe('sendPostRequest()', () => {
     it('should make http POST request with auth token', async () => {
+      const axiosMock = new AxiosMockAdapter(axios);
+      axiosMock.onPost(url).reply(200);
+      
       const requestParams: ISendLogRequest = {
         accessToken: 'securely',
         app: {
@@ -208,20 +212,12 @@ describe('LogUploader', () => {
         },
         traces: [{ topic: 'sdk', level: 'info', message: 'log this' }]
       };
-      const api = nock(url, {
-        reqheaders: {
-          'content-type': 'application/json; charset=UTF-8',
-          authorization: /Bearer/,
-        }
-      });
-      const logs = api.post('').reply(200);
 
       await logUploader['sendPostRequest'](requestParams);
 
-      expect(logs.matchHeader('Authorization', /Bearer /)).toBeTruthy();
-      expect(logs.isDone()).toBe(true);
-
-      nock.restore();
+      expect(axiosMock.history.post.length).toBe(1);
+      const req = axiosMock.history.post[0]!;
+      expect((req.headers!.get as any)('authorization')).toEqual('Bearer securely');
     });
   });
 
