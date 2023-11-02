@@ -9,7 +9,6 @@ module.exports = {
     '<rootDir>/tests/**/*.test.(ts|js)'
   ],
   setupFiles: [
-    '<rootDir>/tests/setup.js'
   ],
   coverageThreshold: {
     global: {
