@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 # [Unreleased](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/4.2.7...HEAD)
+### Changed
+* [no-jira] Update uuid
+* [no-jira] Update jest
+* [no-jira] Update jest-environment-jsdom
+* [no-jira] Update ts-jest
 
 # [4.2.7](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.2.6...4.2.7)
 ### Fixed
