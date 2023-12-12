@@ -4,7 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-# [Unreleased](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/4.2.7...HEAD)
+# [Unreleased](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/4.2.8...HEAD)
+
+# [4.2.8](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.2.7...4.2.8)
+### Changed
+* [no-jira] Update uuid to v9.0.1
 
 # [4.2.7](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.2.6...4.2.7)
 ### Fixed
