@@ -63,7 +63,7 @@
   "dependencies": {
     "@babel/preset-typescript": "^7.17.12",
     "@babel/runtime": "^7.9.2",
-    "axios": "^1.6.0",
+    "axios": "^1.6.5",
     "date-fns": "^2.29.3",
     "exponential-backoff": "^3.1.0",
     "safe-json-stringify": "^1.2.0",
