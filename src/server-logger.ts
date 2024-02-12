@@ -178,11 +178,11 @@ export class ServerLogger {
 
       /* TODO: figure out why the error structure changed and determine if this is necessary */
       const statusCode = err?.status
-        ? err.status as 401 | 404 | '401' | '404'
-        : err?.response?.status as 401 | 404 | '401' | '404';
+        ? parseInt(err.status, 10)
+        : parseInt(err?.response?.status, 10);
 
-      if ([401, 404, '401', '404'].includes(statusCode)) {
-        this.debug(`received a ${statusCode} from logUploader. stopping logging to server`);
+      if ([401, 403, 404].includes(statusCode)) {
+        this.logger.warn(`received a ${statusCode} from logUploader. stopping logging to server`);
         this.logger.stopServerLogging();
       }
     } finally {
