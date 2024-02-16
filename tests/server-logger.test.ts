@@ -359,6 +359,35 @@ describe('ServerLogger', () => {
       expect(serverLogger['logBuffer'].length).toBe(0);
     });
 
+    it('should handle POST errors for 403 responses by stopping the server logging and emitted the error', async () => {
+      /* load the buffer item */
+      const bufferItem1: ILogBufferItem = { size: 0, traces: [{}] as any };
+      const bufferItem2: ILogBufferItem = { size: 0, traces: [{}] as any };
+      serverLogger['logBuffer'].push(bufferItem1);
+
+      const err = new Error('Something broke') as any;
+      err['status'] = '403';
+      postLogsToEndpointSpy.mockRejectedValue(err);
+
+      jest.spyOn(serverLogger['logger'], 'error').mockImplementation();
+      const emitSpy = jest.spyOn(logger, 'emit');
+      const stopServerLoggingSpy = jest.spyOn(logger, 'stopServerLogging');
+      const resetSendQueueSpy =  jest.spyOn(serverLogger['logUploader'], 'resetSendQueue');
+
+      const req = sendLogsToServerFn(true);
+
+      /* simulate adding more items to the buffer while the POST is in flight */
+      serverLogger['logBuffer'].push(bufferItem2);
+
+      await req;
+
+      /* should emit the error, stop logging, reset queue, and clear out the logBuffer */
+      expect(emitSpy).toHaveBeenCalledWith('onError', err);
+      expect(stopServerLoggingSpy).toHaveBeenCalledWith();
+      expect(resetSendQueueSpy).toHaveBeenCalled();
+      expect(serverLogger['logBuffer'].length).toBe(0);
+    });
+
     it('should handle undefined errors', async () => {
       /* load the buffer item */
       const bufferItem: ILogBufferItem = { size: 0, traces: [{}] as any };
