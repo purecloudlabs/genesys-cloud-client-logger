@@ -16,7 +16,8 @@
 
     fetch('https://api.inindca.com/api/v2/tokens/me', {
       headers: {
-        Authorization: `Bearer ${accessToken}`
+        Authorization: `Bearer ${accessToken}`,
+        'Genesys-App': 'genesys-cloud-client-logger-webui'
       },
       method: 'get'
     })
