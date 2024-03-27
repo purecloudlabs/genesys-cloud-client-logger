@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 # [Unreleased](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/4.2.10...HEAD)
+### Added
+* [PCM-2343](https://inindca.atlassian.net/browse/PCM-2343) Added Genesys-App to headers.
+
 # [4.2.10](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.2.9...4.2.10)
 ### Fixed
 * [PCM-2312](https://inindca.atlassian.net/browse/PCM-2312) Stop server logging if we get a 403
