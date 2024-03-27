@@ -257,7 +257,7 @@ export class LogUploader {
       headers: {
         'authorization': `Bearer ${requestParams.accessToken}`,
         'content-type': 'application/json; charset=UTF-8',
-        'Genesys-App': 'genesys-cloud-client-logger-webui'
+        'genesys-app': 'genesys-cloud-client-logger-webui'
       },
       data: requestBody
     });
