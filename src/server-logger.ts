@@ -32,7 +32,7 @@ export class ServerLogger {
 
     this.isInitialized = true;
     this.debounceLogUploadTime = logger.config.uploadDebounceTime || DEFAULT_UPLOAD_DEBOUNCE;
-    this.logUploader = getOrCreateLogUploader(logger.config.url, logger.config.debugMode, logger.config.useUniqueLogUploader);
+    this.logUploader = getOrCreateLogUploader(logger.config.url, logger.config.debugMode, logger.config.useUniqueLogUploader, logger.config.originAppName);
 
     window.addEventListener('unload', this.sendAllLogsInstantly.bind(this));
 

@@ -26,16 +26,16 @@ export interface IQueueItem {
 
 const logUploaderMap = new Map<string, LogUploader>();
 
-export const getOrCreateLogUploader = (url: string, debugMode = false, useUniqueLogUploader?: boolean): LogUploader => {
+export const getOrCreateLogUploader = (url: string, debugMode = false, useUniqueLogUploader?: boolean, originAppName = ''): LogUploader => {
   if (useUniqueLogUploader) {
-    return new LogUploader(url, debugMode);
+    return new LogUploader(url, debugMode, originAppName);
   }
 
   let uploader = logUploaderMap.get(url);
 
   /* if we don't have an uploader for this url, create one */
   if (!uploader) {
-    uploader = new LogUploader(url, debugMode);
+    uploader = new LogUploader(url, debugMode, originAppName);
     logUploaderMap.set(url, uploader);
   }
 
@@ -46,11 +46,8 @@ export class LogUploader {
   sendQueue: IQueueItem[] = [];
   private retryAfter?: Date;
   private pendingRequest?: IQueueItem;
-  private logger: Logger;
 
-  constructor (private url: string, private debugMode: boolean = false, private logger: Logger) {
-    this.logger = logger;
-   }
+  constructor (private url: string, private debugMode: boolean = false, private originAppName: string) { }
 
   postLogsToEndpoint (requestParams: ISendLogRequest): Promise<any> {
     const deferred = getDeferred();
@@ -261,7 +258,7 @@ export class LogUploader {
       headers: {
         'authorization': `Bearer ${requestParams.accessToken}`,
         'content-type': 'application/json; charset=UTF-8',
-        'genesys-app': this.logger?.config?.originAppName || 'genesys-cloud-client-logger-webui'
+        'genesys-app': this.originAppName || 'genesys-cloud-client-logger-webui'
       },
       data: requestBody
     });
