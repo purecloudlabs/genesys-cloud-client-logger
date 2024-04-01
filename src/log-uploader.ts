@@ -3,7 +3,6 @@ import { backOff } from 'exponential-backoff';
 import { isAfter, add, differenceInMilliseconds } from 'date-fns';
 import { IDeferred, ILogRequest, ISendLogRequest } from './interfaces';
 import { getDeferred, deepClone } from './utils';
-import { Logger } from './logger';
 
 const SAVED_REQUESTS_KEY = 'gc_logger_requests';
 
@@ -47,7 +46,7 @@ export class LogUploader {
   private retryAfter?: Date;
   private pendingRequest?: IQueueItem;
 
-  constructor (private url: string, private debugMode: boolean = false, private originAppName: string) { }
+  constructor (private url: string, private debugMode: boolean = false, private originAppName?: string) { }
 
   postLogsToEndpoint (requestParams: ISendLogRequest): Promise<any> {
     const deferred = getDeferred();
