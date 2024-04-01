@@ -3,6 +3,7 @@ import { backOff } from 'exponential-backoff';
 import { isAfter, add, differenceInMilliseconds } from 'date-fns';
 import { IDeferred, ILogRequest, ISendLogRequest } from './interfaces';
 import { getDeferred, deepClone } from './utils';
+import { Logger } from './logger';
 
 const SAVED_REQUESTS_KEY = 'gc_logger_requests';
 
@@ -45,8 +46,11 @@ export class LogUploader {
   sendQueue: IQueueItem[] = [];
   private retryAfter?: Date;
   private pendingRequest?: IQueueItem;
+  private logger: Logger;
 
-  constructor (private url: string, private debugMode: boolean = false) { }
+  constructor (private url: string, private debugMode: boolean = false, private logger: Logger) {
+    this.logger = logger;
+   }
 
   postLogsToEndpoint (requestParams: ISendLogRequest): Promise<any> {
     const deferred = getDeferred();
@@ -257,7 +261,7 @@ export class LogUploader {
       headers: {
         'authorization': `Bearer ${requestParams.accessToken}`,
         'content-type': 'application/json; charset=UTF-8',
-        'genesys-app': 'genesys-cloud-client-logger-webui'
+        'genesys-app': this.logger?.config?.originAppName || 'genesys-cloud-client-logger-webui'
       },
       data: requestBody
     });
