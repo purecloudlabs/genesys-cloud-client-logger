@@ -4,9 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-# [Unreleased](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/4.2.10...HEAD)
-### Added
-* [PCM-2343](https://inindca.atlassian.net/browse/PCM-2343) Added Genesys-App to headers.
+# [Unreleased](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/4.2.11...HEAD)
+
+# [4.2.11](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.2.10...4.2.11)
+### Fixed
+* [PCM-2349](https://inindca.atlassian.net/browse/PCM-2349) - Fixed several medium/high/critical Snyk vulnerabilities.
 
 # [4.2.10](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.2.9...4.2.10)
 ### Fixed
