@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import { backOff } from 'exponential-backoff';
 import { isAfter, add, differenceInMilliseconds } from 'date-fns';
-import { IDeferred, ILogRequest, ISendLogRequest } from './interfaces';
+import { ICustomHeaders, IDeferred, ILogRequest, ISendLogRequest } from './interfaces';
 import { getDeferred, deepClone } from './utils';
 
 const SAVED_REQUESTS_KEY = 'gc_logger_requests';
@@ -25,16 +25,16 @@ export interface IQueueItem {
 
 const logUploaderMap = new Map<string, LogUploader>();
 
-export const getOrCreateLogUploader = (url: string, debugMode = false, useUniqueLogUploader?: boolean, originAppName = ''): LogUploader => {
+export const getOrCreateLogUploader = (url: string, debugMode = false, useUniqueLogUploader?: boolean, customHeaders?: ICustomHeaders): LogUploader => {
   if (useUniqueLogUploader) {
-    return new LogUploader(url, debugMode, originAppName);
+    return new LogUploader(url, debugMode, customHeaders);
   }
 
   let uploader = logUploaderMap.get(url);
 
   /* if we don't have an uploader for this url, create one */
   if (!uploader) {
-    uploader = new LogUploader(url, debugMode, originAppName);
+    uploader = new LogUploader(url, debugMode, customHeaders);
     logUploaderMap.set(url, uploader);
   }
 
@@ -46,7 +46,7 @@ export class LogUploader {
   private retryAfter?: Date;
   private pendingRequest?: IQueueItem;
 
-  constructor (private url: string, private debugMode: boolean = false, private originAppName?: string) { }
+  constructor (private url: string, private debugMode: boolean = false, private customHeaders?: ICustomHeaders) { }
 
   postLogsToEndpoint (requestParams: ISendLogRequest): Promise<any> {
     const deferred = getDeferred();
@@ -250,16 +250,18 @@ export class LogUploader {
     const requestBody: Partial<ISendLogRequest> = { ...requestParams };
     delete requestBody.accessToken;
 
+    const headers = {
+      'authorization': `Bearer ${requestParams.accessToken}`,
+      'content-type': 'application/json; charset=UTF-8',
+      ...(this.customHeaders || {}),
+
+    }
     return axios({
       method: 'post',
       url: this.url,
       responseType: 'text',
-      headers: {
-        'authorization': `Bearer ${requestParams.accessToken}`,
-        'content-type': 'application/json; charset=UTF-8',
-        'genesys-app': this.originAppName || 'genesys-cloud-client-logger-webui'
-      },
-      data: requestBody
+      data: requestBody,
+      headers,
     });
   }
 
