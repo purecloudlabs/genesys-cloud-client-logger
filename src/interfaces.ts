@@ -94,6 +94,13 @@ export interface ILoggerConfig {
    * not calling next() at all - don't log the message
    */
   formatters?: LogFormatterFn[];
+  /**
+   * **** FOR GENESYS INTERNAL USE ****
+   * These headers are to be provided by internal consuming apps that use a
+   * built-in OAuth client for telemetry purposes. Headers that are
+   * provided by non-Genesys apps will be ignored.
+   */
+  customHeaders?: ICustomHeaders;
 }
 
 export interface ILogger {
@@ -205,6 +212,10 @@ export interface ILogMessageOptions {
   skipDefaultFormatter?: boolean,
   skipServer?: boolean,
   skipSecondaryLogger?: boolean,
+}
+
+export interface ICustomHeaders {
+  [header: string]: string;
 }
 
 export type NextFn = NextFnWithoutParams & NextFnWithParams;
