@@ -26,6 +26,7 @@ def getBuildType = {
 webappPipeline {
     projectName = 'genesys-cloud-client-logger'
     team = 'Client Streaming and Signaling'
+    jiraProjectKey = 'STREAM'
     mailer = 'GcMediaStreamSignal@genesys.com'
     chatGroupId = '763fcc91-e530-4ed7-b318-03f525a077f6'
 
