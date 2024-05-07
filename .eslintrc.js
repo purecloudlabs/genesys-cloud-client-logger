@@ -16,8 +16,8 @@ module.exports = {
     "browser": true
   },
   "extends": [
-    "plugin:@typescript-eslint/recommended",
-    "plugin:@typescript-eslint/recommended-requiring-type-checking"
+    "plugin:@typescript-eslint/recommended-type-checked",
+    "plugin:@typescript-eslint/stylistic-type-checked",
   ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
@@ -121,7 +121,6 @@ module.exports = {
     "id-match": "error",
     "jsdoc/check-alignment": "error",
     "jsdoc/check-indentation": "error",
-    "jsdoc/newline-after-description": "error",
     "max-classes-per-file": [
       "error",
       1
