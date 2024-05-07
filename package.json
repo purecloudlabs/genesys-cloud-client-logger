@@ -53,7 +53,7 @@
     "nock": "^13.5.4",
     "npm-check": "^6.0.1",
     "pre-push": "^0.1.4",
-    "rimraf": "^3.0.2",
+    "rimraf": "^5.0.5",
     "stupid-server": "^0.2.5",
     "ts-jest": "^29.1.2",
     "ts-loader": "^9.5.1",
