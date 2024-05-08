@@ -13,7 +13,7 @@ export class ServerLogger {
   private logger: Logger;
   private logBuffer: ILogBufferItem[] = [];
   private debounceLogUploadTime: number;
-  private debounceTimer: any = null;
+  private debounceTimer: NodeJS.Timeout | undefined;
   private logUploader: LogUploader;
 
   constructor (logger: Logger) {
@@ -37,7 +37,7 @@ export class ServerLogger {
     window.addEventListener('unload', this.sendAllLogsInstantly.bind(this));
 
     /* when we stop server logging, we need to clear everything out */
-    this.logger.on('onStop', (_reason) => {
+    this.logger.on('onStop', () => {
       this.debug('`onStop` received. Clearing logBuffer and sendQueue', {
         logBuffer: this.logBuffer,
         sendQueue: this.logUploader.sendQueue
@@ -142,7 +142,7 @@ export class ServerLogger {
     if (!this.logBuffer.length) {
       /* clear timer */
       clearTimeout(this.debounceTimer);
-      this.debounceTimer = null;
+      this.debounceTimer = undefined;
       this.debug('buffer empty, not sending http request');
       return;
     }
@@ -162,7 +162,7 @@ export class ServerLogger {
 
     /* clear timer */
     clearTimeout(this.debounceTimer);
-    this.debounceTimer = null;
+    this.debounceTimer = undefined;
 
     /* grab the first item to send (remove it from the list) */
     const [bufferItem] = this.logBuffer.splice(0, 1);
@@ -178,8 +178,8 @@ export class ServerLogger {
 
       /* TODO: figure out why the error structure changed and determine if this is necessary */
       const statusCode = err?.status
-        ? parseInt(err.status, 10)
-        : parseInt(err?.response?.status, 10);
+        ? parseInt(err.status as string, 10)
+        : parseInt(err?.response?.status as string, 10);
 
       if ([401, 403, 404].includes(statusCode)) {
         this.logger.warn(`received a ${statusCode} from logUploader. stopping logging to server`);
