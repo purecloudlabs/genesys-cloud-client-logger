@@ -9,6 +9,7 @@ module.exports = {
     '<rootDir>/tests/**/*.test.(ts|js)'
   ],
   setupFiles: [
+    './jest.setup.js'
   ],
   coverageThreshold: {
     global: {

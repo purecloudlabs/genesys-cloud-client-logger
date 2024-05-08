@@ -1,13 +1,12 @@
 import { EventEmitter } from 'events';
-import { v4 } from 'uuid';
 import stringify from 'safe-json-stringify';
 
 import { ILoggerConfig, LogLevel, ILogger, LogFormatterFn, StopReason, LoggerEvents } from './interfaces';
 import { ServerLogger } from './server-logger';
 import { ILogMessageOptions, NextFn } from '.';
-import StrictEventEmitter from 'strict-event-emitter-types/types/src';
+import StrictEventEmitter from 'strict-event-emitter-types';
 
-export class Logger extends (EventEmitter as { new(): StrictEventEmitter<EventEmitter, LoggerEvents> }) implements ILogger {
+export class Logger extends (EventEmitter as new() => StrictEventEmitter<EventEmitter, LoggerEvents>) implements ILogger {
   declare readonly clientId: string;
   config: ILoggerConfig;
   private serverLogger!: ServerLogger;
@@ -23,9 +22,10 @@ export class Logger extends (EventEmitter as { new(): StrictEventEmitter<EventEm
   /* eslint-enable @typescript-eslint/naming-convention */
 
   constructor (config: ILoggerConfig) {
+    // eslint-disable-next-line constructor-super
     super();
     Object.defineProperty(this, 'clientId', {
-      value: v4(),
+      value: crypto.randomUUID(),
       writable: false
     });
 
@@ -167,7 +167,7 @@ export class Logger extends (EventEmitter as { new(): StrictEventEmitter<EventEm
   private defaultFormatter = (
     logLevel: LogLevel,
     message: string | Error,
-    details: any | undefined,
+    details: any,
     messageOptions: ILogMessageOptions,
     next: NextFn
   ): void => {
@@ -189,7 +189,7 @@ export class Logger extends (EventEmitter as { new(): StrictEventEmitter<EventEm
   private logMessage = (
     logLevel: LogLevel,
     message: string,
-    details: any | undefined,
+    details: any,
     messageOptions: ILogMessageOptions
   ): void => {
     if (!messageOptions.skipSecondaryLogger) {
@@ -197,10 +197,11 @@ export class Logger extends (EventEmitter as { new(): StrictEventEmitter<EventEm
         /* log to secondary logger (default is console) */
         const params = [message];
         if (typeof details !== 'undefined') {
+        /* eslint-disable-next-line @typescript-eslint/no-unsafe-argument */
           params.push(this.config.stringify ? stringify(details) : details);
         }
 
-        /* eslint-disable-next-line prefer-spread */
+        /* eslint-disable-next-line prefer-spread, @typescript-eslint/no-unsafe-argument */
         this.secondaryLogger[logLevel].apply(this.secondaryLogger, params as any);
       } catch (error) {
         /* don't let custom logger errors stop our logger */

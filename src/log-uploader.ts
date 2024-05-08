@@ -157,7 +157,7 @@ export class LogUploader {
 
         // This *should* be an axios error according to typings, but it appears this could be an AxiosError *or* and XmlHttpRequest
         // we'll check both to be safe
-        const newRetryAfter = (err as AxiosError).response?.headers?.['retry-after'] || ((err as any).response as XMLHttpRequest)?.getResponseHeader?.('retry-after');
+        const newRetryAfter: string = (err).response?.headers?.['retry-after'] || ((err as any).response as XMLHttpRequest)?.getResponseHeader?.('retry-after');
         if (newRetryAfter) {
           const newRetryAfterDate = add(new Date(), { seconds: parseInt(newRetryAfter, 10) });
           if (!this.retryAfter || isAfter(newRetryAfterDate, this.retryAfter)) {
@@ -183,7 +183,7 @@ export class LogUploader {
 
   private handleBackoffError (queueItem: IQueueItem, error: any) {
     // there are certain errors we know we don't want to try again, and certain errors/responses that *may* work in the future.
-    const status = error.response?.status;
+    const status = error.response?.status as number;
 
     const isRetriableStatus = status && STATUS_CODES_TO_RETRY_IMMEDIATELY.includes(status) || STATUS_CODES_TO_RETRY_LATER.includes(status);
 
@@ -209,7 +209,7 @@ export class LogUploader {
 
       // else we need to wait *at least* until the new time and check again
     } else {
-      const timeToWait = differenceInMilliseconds(this.retryAfter!, Date.now());
+      const timeToWait = differenceInMilliseconds(this.retryAfter, Date.now());
 
       this.debug('Respecting "retry-after" response header, waiting to send request', { millisecondsToWait: timeToWait });
       await new Promise(resolve => {
@@ -252,9 +252,9 @@ export class LogUploader {
 
     const headers = {
       'authorization': `Bearer ${requestParams.accessToken}`,
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       'content-type': 'application/json; charset=UTF-8',
       ...(this.customHeaders || {}),
-
     }
     return axios({
       method: 'post',

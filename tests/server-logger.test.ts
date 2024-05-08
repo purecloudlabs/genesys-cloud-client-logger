@@ -253,7 +253,7 @@ describe('ServerLogger', () => {
       const bufferItem: ILogBufferItem = { size: 0, traces: [{ id: 'asdf' }, { id: 'qwerty' }] as any };
       serverLogger['logBuffer'].push(bufferItem);
 
-      expect(serverLogger['debounceTimer']).toBe(null);
+      expect(serverLogger['debounceTimer']).toBeUndefined();
 
       await sendLogsToServerFn();
 
@@ -276,7 +276,7 @@ describe('ServerLogger', () => {
       const bufferItem: ILogBufferItem = { size: 0, traces: [] as any };
       serverLogger['logBuffer'].push(bufferItem);
 
-      expect(serverLogger['debounceTimer']).toBe(null);
+      expect(serverLogger['debounceTimer']).toBeUndefined();
 
       await sendLogsToServerFn();
 
@@ -302,7 +302,7 @@ describe('ServerLogger', () => {
       const originalPromise = sendLogsToServerFn(true);
 
       /* should not have have setup the timer yet (since we are sending imediately) */
-      expect(serverLogger['debounceTimer']).toBe(null);
+      expect(serverLogger['debounceTimer']).toBeUndefined();
       expect(debugSpy).toHaveBeenCalledWith('calling logUploader.postLogsToEndpoint() with', { bufferItem, newLogBuffer: [] });
 
       /* after the http request completes, it should call itself to setup the timer */

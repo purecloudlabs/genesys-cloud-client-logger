@@ -224,7 +224,7 @@ export type NextFnWithParams = (level: LogLevel, message: string | Error, detail
 export type LogFormatterFn = (
   level: LogLevel,
   message: string | Error,
-  details: any | undefined,
+  details: any,
   options: ILogMessageOptions,
   next: NextFn
 ) => void;
