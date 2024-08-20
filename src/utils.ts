@@ -1,5 +1,7 @@
 import { IDeferred } from "./interfaces";
 
+const DEEP_CLONE_MAX_DEPTH = 10;
+
 export const calculateLogBufferSize = function (arr: any[]): number {
   return arr.reduce((size: number, trace: any) => size + calculateLogMessageSize(trace), 0);
 };
@@ -24,13 +26,17 @@ export const getDeferred = (): IDeferred => {
   return { promise, resolve, reject };
 }
 
-export const deepClone = function deepClone<T> (itemToBeCloned: T): T {
+export const deepClone = function deepClone<T> (itemToBeCloned: T, depth = DEEP_CLONE_MAX_DEPTH): T | null {
+  if (depth === 0) {
+    return null;
+  }
+
   /* eslint-disable guard-for-in */
   if (itemToBeCloned) {
     if (Array.isArray(itemToBeCloned)) {
       const clonedArray = [];
       for (let i = 0; i < itemToBeCloned.length; i++) {
-        clonedArray[i] = deepClone(itemToBeCloned[i]);
+        clonedArray[i] = deepClone(itemToBeCloned[i], depth - 1);
       }
       return clonedArray as any as T;
     }
@@ -39,7 +45,7 @@ export const deepClone = function deepClone<T> (itemToBeCloned: T): T {
       const clonedObject = { ...itemToBeCloned };
       for (const key in itemToBeCloned) {
         try {
-          clonedObject[key] = deepClone(itemToBeCloned[key]);
+          clonedObject[key] = deepClone(itemToBeCloned[key], depth - 1) as any;
         } catch (e) {
           /* istanbul ignore next */
           console.debug('WARN: Failed cloning key on object, ignoring', { key, object: itemToBeCloned });
