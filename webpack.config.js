@@ -7,7 +7,7 @@ const files = {
   filenameMinMap: 'genesys-cloud-client-logger.min.js.map'
 };
 
-const outDir = 'dist'
+const outDir = 'dist';
 
 module.exports = (env) => {
   const minimize = env && env.production;
@@ -27,9 +27,11 @@ module.exports = (env) => {
     output: {
       path: path.resolve(__dirname, outDir),
       filename,
-      library: 'GenesysCloudClientLogger',
-      libraryTarget: 'umd',
-      libraryExport: 'default'
+      library: {
+        name: 'GenesysCloudClientLogger',
+        type: 'umd',
+        export: 'default'
+      }
     },
     resolve: {
       extensions: ['.ts', '.js', '.json']
@@ -38,16 +40,18 @@ module.exports = (env) => {
       rules: [
         {
           test: /\.js$/,
-          exclude: /(node_modules|bower_components)/,
-          loader: 'babel-loader',
-          query: {
-            presets: ['@babel/preset-env']
+          exclude: /node_modules/,
+          use: {
+            loader: 'babel-loader',
+            options: {
+              presets: ['@babel/preset-env']
+            }
           }
         },
         {
           test: /\.ts$/,
-          exclude: /(node_modules|bower_components)/,
-          loader: 'ts-loader'
+          exclude: /node_modules/,
+          use: 'ts-loader'
         }
       ]
     }
