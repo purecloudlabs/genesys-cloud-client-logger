@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 # [Unreleased](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/4.2.12...HEAD)
 ### Fixed
 * [STREAM-172](https://inindca.atlassian.net/browse/STREAM-172) Update axios to address Snyk vulnerability
+* [STREAM-163](https://inindca.atlassian.net/browse/STREAM-163) Stack overflow occurs when deep-cloning deeply nested objects
 
 # [4.2.12](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.2.11...4.2.12)
 ### Added

@@ -198,6 +198,10 @@ export class ServerLogger {
     const logCopy = deepClone(log);
     const truncText = '[[TRUNCATED]]';
 
+    if (!logCopy) {
+      return null;
+    }
+
     /* first truncate the details */
     logCopy.details = truncText;
     trace = this.convertToTrace(logLevel, logCopy);

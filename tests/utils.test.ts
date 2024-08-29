@@ -37,6 +37,10 @@ describe('deepClone()', () => {
     const clonedTest = deepClone(testItem);
     expect(clonedTest).toStrictEqual(testItem);
     expect(clonedTest).not.toBe(testItem);
+
+    if (!clonedTest) {
+      fail('cloned item should exist');
+    }
     expect(clonedTest[2]).toStrictEqual(testItem[2]);
     expect(clonedTest[2]).not.toBe(testItem[2]);
     expect(clonedTest[4]).toStrictEqual(testItem[4]);
@@ -66,12 +70,54 @@ describe('deepClone()', () => {
       testArray: [1, 2, 3, 4]
     }
     const clonedTest = deepClone(testItem);
+    if (!clonedTest) {
+      fail('cloned item should exist');
+    }
     expect(clonedTest).toStrictEqual(testItem);
     expect(clonedTest).not.toBe(testItem);
     expect(clonedTest.testObj).toStrictEqual(testItem.testObj);
     expect(clonedTest.testArray).toStrictEqual(testItem.testArray);
     expect(clonedTest.testObj).not.toBe(testItem.testObj);
     expect(clonedTest.testArray).not.toBe(testItem.testArray);
+  });
+  it('should clone a passed in item deeply with a limit; complex object nested beyond limit', () => {
+    const testItem = {
+      test: 1,
+      testString: 'hello',
+      testObj: {
+        test2: 2,
+        testString2: 'hello',
+        testObj2: {
+          test3: 3,
+          testString3: 'hello'
+        }
+      },
+      testFunc: function () {
+        console.log('hello');
+      },
+      testArray: [1, 2, 3, 4]
+    }
+
+    const clonedTest = deepClone(testItem, 3);
+    if (!clonedTest) {
+      fail('cloned item should exist');
+    }
+    expect(clonedTest).not.toStrictEqual(testItem);
+    expect(clonedTest).not.toBe(testItem);
+    expect(clonedTest.testArray).toStrictEqual(testItem.testArray);
+    expect(clonedTest.testArray).not.toBe(testItem.testArray);
+    expect(clonedTest.testFunc).toStrictEqual(testItem.testFunc);
+    expect(typeof clonedTest.testFunc).toBe('function');
+    expect(clonedTest.testObj.testObj2.test3).toBeNull();
+    expect(clonedTest.testObj.testObj2.testString3).toBeNull();
+  });
+  it('should clone a passed in item deeply with a limit; recursive object', () => {
+    let testItem = {} as any;
+    testItem['testItem'] = testItem;
+
+    const clonedTest = deepClone(testItem);
+    expect(clonedTest).not.toStrictEqual(testItem);
+    expect(clonedTest).not.toBe(testItem);
   });
   it('should clone a passed in item deeply; function', () => {
     const testItem = function () {

@@ -502,10 +502,15 @@ describe('ServerLogger', () => {
       expect(truncateLogFn('info', inputLog)).toEqual(expectedTrace);
     });
 
-    it('should return `null` if truncated message it too large (which honestly, should never happen)', () => {
+    it('should return `null` if truncated message is too large (which honestly, should never happen)', () => {
       const inputLog: ILogMessage = convertToLogMessageFn(STRING_SIZE_15090_BYTES, STRING_SIZE_15090_BYTES);
       jest.spyOn(utils, 'calculateLogMessageSize').mockReturnValue(14501);
       expect(truncateLogFn('info', inputLog)).toBe(null);
+    });
+
+    it('should return `null` if truncated message receives `null` from `deepClone` (which should not happen)', () => {
+      const inputLog: ILogMessage = null as any;
+      expect(truncateLogFn('info', inputLog)).toBeNull();
     });
   });
 
