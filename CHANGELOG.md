@@ -4,7 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-# [Unreleased](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/4.2.12...HEAD)
+# [Unreleased](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/4.2.13...HEAD)
+
+# [4.2.13](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.2.12...4.2.13)
+### Fixed
+* [STREAM-172](https://inindca.atlassian.net/browse/STREAM-172) Update axios to address Snyk vulnerability
+* [STREAM-163](https://inindca.atlassian.net/browse/STREAM-163) Stack overflow occurs when deep-cloning deeply nested objects
 
 # [4.2.12](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.2.11...4.2.12)
 ### Added

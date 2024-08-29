@@ -1,6 +1,6 @@
 {
   "name": "genesys-cloud-client-logger",
-  "version": "4.2.12",
+  "version": "4.2.13",
   "description": "Common logger for genesys cloud client application to upload logs server",
   "main": "dist/src/index.js",
   "module": "dist/es/index.js",
@@ -63,7 +63,7 @@
   "dependencies": {
     "@babel/preset-typescript": "^7.17.12",
     "@babel/runtime": "^7.9.2",
-    "axios": "^1.6.5",
+    "axios": "^1.7.4",
     "date-fns": "^2.29.3",
     "exponential-backoff": "^3.1.0",
     "safe-json-stringify": "^1.2.0",
