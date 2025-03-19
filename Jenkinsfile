@@ -22,7 +22,7 @@ webappPipelineV2 {
     urlPrefix = 'genesys-cloud-client-logger'
     nodeVersion = '20.x multiarch'
     mailer = 'GcMediaStreamSignal@genesys.com'
-    chatGroupId = '763fcc91-e530-4ed7-b318-03f525a077f6'
+    chatGroupId = 'adhoc-60e40c95-3d9c-458e-a48e-ca4b29cf486d'
 
     manifest = customManifest('./dist') {
         readJSON(file: 'dist/manifest.json')
