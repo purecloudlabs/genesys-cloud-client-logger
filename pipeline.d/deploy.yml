@@ -49,3 +49,6 @@ deploy:
         family: webui
       schedule: always
       sequence: parallel
+  changeManagement:
+    submit: False
+    finish: True
