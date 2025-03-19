@@ -1,5 +1,3 @@
-import groovy.json.JsonBuilder
-
 @Library('pipeline-library') _
 
 def MAIN_BRANCH = 'master'
@@ -17,21 +15,14 @@ def isDevelop = {
   env.BRANCH_NAME == DEVELOP_BRANCH
 }
 
-def getBuildType = {
-  isMain()
-    ? 'MAINLINE'
-    : 'FEATURE'
-}
+def npmFunctions = new com.genesys.jenkins.Npm()
+def gitFunctions = new com.genesys.jenkins.Git()
 
-webappPipeline {
-    projectName = 'genesys-cloud-client-logger'
+webappPipelineV2 {
+    urlPrefix = 'genesys-cloud-client-logger'
     nodeVersion = '20.x multiarch'
-    team = 'Client Streaming and Signaling'
-    jiraProjectKey = 'STREAM'
     mailer = 'GcMediaStreamSignal@genesys.com'
     chatGroupId = '763fcc91-e530-4ed7-b318-03f525a077f6'
-
-    buildType = getBuildType
 
     manifest = customManifest('./dist') {
         readJSON(file: 'dist/manifest.json')
@@ -43,17 +34,6 @@ webappPipeline {
       ]
     }
 
-    deployConfig = [
-      dev : 'always',
-      test : 'always',
-      prod : 'always',
-      'fedramp-use2-core': 'always'
-    ]
-
-    autoSubmitCm = true
-
-    testJob = 'no-tests' // see buildStep to spigot tests
-
     ciTests = {
         println("""
 ========= BUILD VARIABLES =========
@@ -61,13 +41,11 @@ ENVIRONMENT  : ${env.ENVIRONMENT}
 BUILD_NUMBER : ${env.BUILD_NUMBER}
 BUILD_ID     : ${env.BUILD_ID}
 BRANCH_NAME  : ${env.BRANCH_NAME}
-APP_NAME     : ${env.APP_NAME}
 VERSION      : ${env.VERSION}
 ===================================
       """)
 
       sh("""
-        npm i -g npm@7
         npm ci
         npm run test
       """)
@@ -82,7 +60,7 @@ VERSION      : ${env.VERSION}
     }
 
     onSuccess = {
-       sh("""
+        sh("""
             echo "=== root folder ==="
             ls -als ./
 
@@ -132,27 +110,9 @@ VERSION      : ${env.VERSION}
           version = "${packageJson.version}-${featureBranch}.${env.BUILD_NUMBER}".toString()
         }
 
-        def npmFunctions = null
-        def gitFunctions = null
-        def pwd = pwd()
-
-        stage('Download npm & git utils') {
-            script {
-              // clone pipelines repo
-                dir('pipelines') {
-                    git branch: 'COMUI-857',
-                        url: 'git@bitbucket.org:inindca/pipeline-library.git',
-                        changelog: false
-
-                    npmFunctions = load 'src/com/genesys/jenkins/Npm.groovy'
-                    gitFunctions = load 'src/com/genesys/jenkins/Git.groovy'
-                }
-            }
-        } // end download pipeline utils
-
         stage('Publish to NPM') {
             script {
-                dir(pwd) {
+                dir(pwd()) {
                     npmFunctions.publishNpmPackage([
                         tag: tag, // optional
                         useArtifactoryRepo: false, // optional, default `true`
