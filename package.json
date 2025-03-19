@@ -15,7 +15,7 @@
     "build:es": "tsc -p . --outDir ./dist/es --target es2015 --module es2015",
     "build:cjs": "tsc -p .",
     "build:dev": "npm run clean && tsc -p . && webpack",
-    "build:cdn": "webpack --env.development && webpack --env.production",
+    "build:cdn": "NODE_OPTIONS=--openssl-legacy-provider webpack --env.development && NODE_OPTIONS=--openssl-legacy-provider webpack --env.production",
     "build:manifest": "ts-node scripts/build-cdn-with-manifest.ts",
     "lint": "eslint -c .eslintrc.js --ext .ts src",
     "lint:fix": "npm run lint -- --fix",

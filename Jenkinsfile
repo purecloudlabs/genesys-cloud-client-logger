@@ -25,12 +25,12 @@ def getBuildType = {
 
 webappPipeline {
     projectName = 'genesys-cloud-client-logger'
+    nodeVersion = '20.x multiarch'
     team = 'Client Streaming and Signaling'
     jiraProjectKey = 'STREAM'
     mailer = 'GcMediaStreamSignal@genesys.com'
     chatGroupId = '763fcc91-e530-4ed7-b318-03f525a077f6'
 
-    nodeVersion = '14.x'
     buildType = getBuildType
 
     manifest = customManifest('./dist') {
