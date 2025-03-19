@@ -7,7 +7,6 @@ service:
   blueprint: webUi
   team: Client Streaming and Signaling
   jiraProjectKey: STREAM
-  pmContact: alan.lanteigne@genesys.com
   qaContact: sohel.patel@genesys.com
   gitDefaultBranch: develop
 costAllocation:
