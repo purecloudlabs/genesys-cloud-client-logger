@@ -8,7 +8,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Get and Cache Dependencies
-        uses: ./.github/workflows/actions/cache-deps/action.yml
+        uses: ./.github/workflows/actions/cache-deps
         with: 
           caching: false
       - name: Lint
@@ -20,7 +20,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Get and Cache Dependencies
-        uses: ./.github/workflows/actions/cache-deps/action.yml
+        uses: ./.github/workflows/actions/cache-deps
         with: 
           caching: false
       - name: Run tests
@@ -39,7 +39,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Get and Cache Dependencies
-        uses: ./.github/workflows/actions/cache-deps/action.yml
+        uses: ./.github/workflows/actions/cache-deps
         with: 
           caching: false
       - name: Build
