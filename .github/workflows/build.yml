@@ -1,0 +1,51 @@
+name: Build and Generate Artifacts
+on: push
+jobs:
+  lint:
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Get and Cache Dependencies
+        uses: ./.github/workflows/actions/cache-deps/action.yml
+        with: 
+          caching: false
+      - name: Lint
+        run: npm run lint
+  test:
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Get and Cache Dependencies
+        uses: ./.github/workflows/actions/cache-deps/action.yml
+        with: 
+          caching: false
+      - name: Run tests
+        id: run-tests
+        run: npm run test
+      - name: Upload test report
+        if: failure() && steps.run-tests.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: test.json
+  build:
+    needs: [lint, test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Get and Cache Dependencies
+        uses: ./.github/workflows/actions/cache-deps/action.yml
+        with: 
+          caching: false
+      - name: Build
+        run: npm run build
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
