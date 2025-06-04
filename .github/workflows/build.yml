@@ -38,6 +38,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      - name: Use NodeJS v16
+        uses: actions/setup-node@v4
+        with:
+          node-version: '16' # This is needed until we upgrade webpack.
       - name: Get and Cache Dependencies
         uses: ./.github/workflows/actions/cache-deps
         with: 
