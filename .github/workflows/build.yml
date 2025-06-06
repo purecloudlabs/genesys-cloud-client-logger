@@ -53,3 +53,5 @@ jobs:
         with:
           name: dist
           path: dist
+      - name: Output run ID
+        run: echo "RUN_ID=${{ github.run_id }}"
