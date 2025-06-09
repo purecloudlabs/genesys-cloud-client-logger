@@ -52,6 +52,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dist
-          path: dist
+          path: |
+            dist/
+            package.json
       - name: Output run ID
         run: echo "RUN_ID=${{ github.run_id }}"
