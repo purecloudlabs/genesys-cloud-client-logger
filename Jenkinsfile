@@ -1,16 +1,16 @@
 @Library('pipeline-library') _
 env.NPM_CONFIG_USERCONFIG = '/var/build/npmrc-nexus'
 
-def MAIN_BRANCH = 'main'
+def MAIN_BRANCH = 'master'
 def DEVELOP_BRANCH = 'develop'
-def isBitbucket = true
+def isBitbucket = false
 
 def isMain = {
   env.BRANCH_NAME == MAIN_BRANCH
 }
 
 def isRelease = {
-  env.BRANCH_NAME?.startsWith('release/')
+  env.BRANCH_NAME.startsWith('release/')
 }
 
 def isDevelop = {
