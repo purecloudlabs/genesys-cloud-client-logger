@@ -21,9 +21,6 @@ def gitFunctions = new com.genesys.jenkins.Git()
 def npmFunctions = new com.genesys.jenkins.Npm()
 
 webappPipelineV2 {
-  projectName = 'genesys-cloud-client-logger'
-  team = 'Client Streaming and Signaling'
-  jiraProjectKey = 'STREAM'
   urlPrefix = 'genesys-cloud-client-logger'
   nodeVersion = '20.x multiarch'
   mailer = 'GcMediaStreamSignal@genesys.com'
