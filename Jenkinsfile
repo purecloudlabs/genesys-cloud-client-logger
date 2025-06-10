@@ -35,11 +35,12 @@ webappPipelineV2 {
     ''')
   }
 
-  buildStep = { assetPrefix ->
-    sh('''
-      npm --versions
-    ''')
-    sh("npm run build:prod -- --base-href='${assetPrefix}'")
+  buildStep = {cdnUrl ->
+      sh("""
+          echo 'CDN_URL ${cdnUrl}'
+          npm --versions
+          npm run build
+      """)
   }
 
   onSuccess = {
