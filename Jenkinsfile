@@ -77,15 +77,18 @@ webappPipelineV2 {
         featureBranch = 'develop'
       }
 
-      version = "${packageJson.version}-${featureBranch}.${env.BUILD_NUMBER}"
+      version = "${packageJson.version}-${featureBranch}.${env.BUILD_NUMBER}".toString()
     }
+
+
+    // Manually update package.json version to prevent corruption
+    sh("npm version ${version} --no-git-tag-version")
 
     stage('Publish to NPM') {
       script {
         npmFunctions.publishNpmPackage([
           tag: tag,
           useArtifactoryRepo: false,
-          version: version,
           dryRun: false
         ])
         def message = "**${name}** ${version} (Build [#${env.BUILD_NUMBER}](${env.BUILD_URL})) has been published to **npm**"
