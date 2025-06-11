@@ -9,13 +9,14 @@ const exactVersion = `v${version}`;
 
 const VERSION = process.env.VERSION || version;
 const APP_NAME = process.env.APP_NAME || name;
+const BRANCH_NAME = process.env.BRANCH_NAME || 'unknown';
 
-console.log({ majorVersion, exactVersion, files, outDir, VERSION, APP_NAME });
+console.log({ majorVersion, exactVersion, files, outDir, VERSION, APP_NAME, BRANCH_NAME });
 
 /* create folders */
 function makeDir (path: string) {
   if (!FS.existsSync(path)) {
-    FS.mkdirSync(path);
+    FS.mkdirSync(path, { recursive: true });
   }
 }
 
@@ -41,12 +42,17 @@ Object.values(files).forEach(file => {
   copyFile(`${outDir}/${file}`, `${outDir}/${exactFile}`);
 });
 
-/* create and write manifest (note: these are the only fields the pipeline uses) */
+/* create and write manifest */
 const manifestPath = `${outDir}/manifest.json`;
 const manifest = {
   name: APP_NAME,
   version: VERSION,
-  indexFiles: indexFiles.sort().reverse().map(file => ({ file }))
+  indexFiles: indexFiles.sort().reverse().map(file => ({ file })),
+  buildMetadata: {
+    git: {
+      branch: BRANCH_NAME
+    }
+  }
 };
 
 FS.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2), { encoding: 'utf8' });

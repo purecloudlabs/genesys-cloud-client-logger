@@ -35,12 +35,13 @@ webappPipelineV2 {
     ''')
   }
 
-  buildStep = {cdnUrl ->
-      sh("""
-          echo 'CDN_URL ${cdnUrl}'
-          npm --versions
-          npm run build
-      """)
+  buildStep = { cdnUrl ->
+    sh("""
+      echo 'CDN_URL ${cdnUrl}'
+      npm --versions
+      npm run build
+      BRANCH_NAME=${env.BRANCH_NAME} node ./scripts/build-cdn-with-manifest.js
+    """)
   }
 
   onSuccess = {
@@ -49,7 +50,7 @@ webappPipelineV2 {
       ls -als ./
 
       echo "=== Printing manifest.json ==="
-      cat ./manifest.json || true
+      cat ./manifest.json
 
       echo "=== Printing package.json ==="
       cat ./package.json
@@ -58,7 +59,7 @@ webappPipelineV2 {
       ls -als dist/
 
       echo "=== Printing dist/deploy-info.json ==="
-      cat ./dist/deploy-info.json || true
+      cat ./dist/deploy-info.json
     """)
 
     def packageJsonPath = './package.json'
