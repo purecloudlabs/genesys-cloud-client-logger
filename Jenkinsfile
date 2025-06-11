@@ -22,7 +22,7 @@ def npmFunctions = new com.genesys.jenkins.Npm()
 
 webappPipelineV2 {
   urlPrefix = 'genesys-cloud-client-logger'
-  nodeVersion = '14.x multiarch'
+  nodeVersion = '20.x multiarch'
   mailer = 'GcMediaStreamSignal@genesys.com'
   chatGroupId = 'adhoc-60e40c95-3d9c-458e-a48e-ca4b29cf486d'
   manifest = customManifest('./dist') {

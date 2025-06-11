@@ -1,4 +1,5 @@
 const path = require('path');
+const TerserPlugin = require('terser-webpack-plugin');
 
 const files = {
   filename: 'genesys-cloud-client-logger.js',
@@ -21,7 +22,18 @@ module.exports = (env) => {
     entry: './src/index.ts',
     mode,
     optimization: {
-      minimize
+      minimize,
+      minimizer: minimize ? [
+        new TerserPlugin({
+          sourceMap: true,
+          terserOptions: {
+            compress: {
+              drop_console: false,
+            },
+          },
+          extractComments: false,
+        })
+      ] : undefined
     },
     devtool: 'source-map',
     output: {
@@ -29,7 +41,8 @@ module.exports = (env) => {
       filename,
       library: 'GenesysCloudClientLogger',
       libraryTarget: 'umd',
-      libraryExport: 'default'
+      libraryExport: 'default',
+      hashFunction: 'sha256'
     },
     resolve: {
       extensions: ['.ts', '.js', '.json']
