@@ -10,8 +10,9 @@ service:
   pmContact: Alan.Lanteigne@genesys.com
   qaContact: sohel.patel@genesys.com
   gitDefaultBranch:
-    - main
+    - master
     - develop
+  gitRepoSshUrl: git@github.com:purecloudlabs/genesys-cloud-client-logger.git
 costAllocation:
   productGroup: Platform
   businessUnit: CX

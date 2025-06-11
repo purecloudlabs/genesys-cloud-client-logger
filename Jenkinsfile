@@ -1,5 +1,4 @@
 @Library('pipeline-library') _
-env.NPM_CONFIG_USERCONFIG = '/var/build/npmrc-nexus'
 
 def MAIN_BRANCH = 'master'
 def DEVELOP_BRANCH = 'develop'
@@ -19,6 +18,7 @@ def isDevelop = {
 
 def gitFunctions = new com.genesys.jenkins.Git()
 def npmFunctions = new com.genesys.jenkins.Npm()
+def notifications = new com.genesys.jenkins.Notifications()
 
 webappPipelineV2 {
   urlPrefix = 'genesys-cloud-client-logger'
@@ -26,7 +26,6 @@ webappPipelineV2 {
   mailer = 'GcMediaStreamSignal@genesys.com'
   chatGroupId = 'adhoc-60e40c95-3d9c-458e-a48e-ca4b29cf486d'
   manifest = customManifest('./dist') {
-      manifest.buildMetadata.git.branch = env.BRANCH_NAME;
       readJSON(file: 'dist/manifest.json')
   }
   ciTests = {
@@ -89,6 +88,13 @@ webappPipelineV2 {
           version: version,
           dryRun: false
         ])
+        def message = "**${name}** ${version} (Build [#${env.BUILD_NUMBER}](${env.BUILD_URL})) has been published to **npm**"
+
+        if (!tag) {
+          message = ":loudspeaker: ${message}"
+        }
+
+        notifications.requestToGenericWebhooksWithMessage(chatGroupId, message);
       }
     }
 

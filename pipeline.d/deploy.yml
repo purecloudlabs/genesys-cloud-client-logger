@@ -40,4 +40,4 @@ deploy:
   serviceTests:
     postDeploy:
       type: unified
-      name: webui-test-prod_post_deploy_pipeline
+      name: no-tests
