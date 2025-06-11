@@ -7,9 +7,19 @@ const { version, name } = require('../package.json');
 const majorVersion = `v${version.split('.')[0]}`;
 const exactVersion = `v${version}`;
 
+// Function to get current git branch
+function getCurrentGitBranch(): string {
+  try {
+    return Child('git branch --show-current', { encoding: 'utf8' }).toString().trim();
+  } catch (error) {
+    console.warn('Could not determine git branch:', error);
+    return 'unknown';
+  }
+}
+
 const VERSION = process.env.VERSION || version;
 const APP_NAME = process.env.APP_NAME || name;
-const BRANCH_NAME = process.env.BRANCH_NAME || 'unknown';
+const BRANCH_NAME = process.env.BRANCH_NAME || getCurrentGitBranch();
 
 console.log({ majorVersion, exactVersion, files, outDir, VERSION, APP_NAME, BRANCH_NAME });
 
