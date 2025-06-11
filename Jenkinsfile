@@ -26,6 +26,7 @@ webappPipelineV2 {
   mailer = 'GcMediaStreamSignal@genesys.com'
   chatGroupId = 'adhoc-60e40c95-3d9c-458e-a48e-ca4b29cf486d'
   manifest = customManifest('./dist') {
+      manifest.buildMetadata.git.branch = env.BRANCH_NAME;
       readJSON(file: 'dist/manifest.json')
   }
   ciTests = {
