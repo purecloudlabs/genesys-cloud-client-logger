@@ -40,7 +40,6 @@ webappPipelineV2 {
       echo 'CDN_URL ${cdnUrl}'
       npm --versions
       npm run build
-      BRANCH_NAME=${env.BRANCH_NAME} node ./scripts/build-cdn-with-manifest.js
     """)
   }
 
