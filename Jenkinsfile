@@ -91,7 +91,7 @@ webappPipelineV2 {
           useArtifactoryRepo: false,
           dryRun: false
         ])
-        def message = "**${name}** ${version} (Build [#${env.BUILD_NUMBER}](${env.BUILD_URL})) has been published to **npm**"
+        def message = "**${packageJson.name}** ${version} (Build [#${env.BUILD_NUMBER}](${env.BUILD_URL})) has been published to **npm**"
 
         if (!tag) {
           message = ":loudspeaker: ${message}"
