@@ -1,0 +1,20 @@
+---
+service:
+  family:
+    - core
+    - webui
+  name: genesys-cloud-client-logger-webui
+  blueprint: webUi
+  team: Client Streaming and Signaling
+  jiraProjectKey: STREAM
+  pmContact: Alan.Lanteigne@genesys.com
+  qaContact: sohel.patel@genesys.com
+  gitDefaultBranch:
+    - master
+    - develop
+  gitRepoSshUrl: git@github.com:purecloudlabs/genesys-cloud-client-logger.git
+costAllocation:
+  productGroup: Platform
+  businessUnit: CX
+  consumedBy:
+    - CX
