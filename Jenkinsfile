@@ -78,7 +78,8 @@ webappPipelineV2 {
       }
 
       version = "${packageJson.version}-${featureBranch}.${env.BUILD_NUMBER}".toString()
-      // Manually update package.json version to prevent corruption
+      
+      // Only update package.json version for non-main branches
       sh("npm version ${version} --no-git-tag-version")
     } else {
       // For main branch, use the version from package.json as-is
