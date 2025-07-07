@@ -25,7 +25,6 @@ module.exports = (env) => {
       minimize,
       minimizer: minimize ? [
         new TerserPlugin({
-          sourceMap: true,
           terserOptions: {
             compress: {
               drop_console: false,
@@ -39,9 +38,11 @@ module.exports = (env) => {
     output: {
       path: path.resolve(__dirname, outDir),
       filename,
-      library: 'GenesysCloudClientLogger',
-      libraryTarget: 'umd',
-      libraryExport: 'default',
+      library: {
+        name: 'GenesysCloudClientLogger',
+        type: 'umd',
+        export: 'default'
+      },
       hashFunction: 'sha256'
     },
     resolve: {
@@ -52,15 +53,17 @@ module.exports = (env) => {
         {
           test: /\.js$/,
           exclude: /(node_modules|bower_components)/,
-          loader: 'babel-loader',
-          query: {
-            presets: ['@babel/preset-env']
+          use: {
+            loader: 'babel-loader',
+            options: {
+              presets: ['@babel/preset-env']
+            }
           }
         },
         {
           test: /\.ts$/,
           exclude: /(node_modules|bower_components)/,
-          loader: 'ts-loader'
+          use: 'ts-loader'
         }
       ]
     }
