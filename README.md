@@ -1,4 +1,6 @@
 # Genesys Cloud Client Logger
+[![Test Matrix](https://github.com/purecloudlabs/genesys-cloud-client-logger/actions/workflows/matrix.yml/badge.svg)](https://github.com/purecloudlabs/genesys-cloud-client-logger/actions/workflows/matrix.yml)
+
 Logger to send client logs to a remote server.
 
 See [CHANGELOG.md](CHANGELOG.md) for version updates.

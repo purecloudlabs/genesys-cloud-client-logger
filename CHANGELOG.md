@@ -4,11 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-# [Unreleased](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/4.2.15...HEAD)
-### Changed
-* [STREAM-640](https://inindca.atlassian.net/browse/STREAM-481) - Bumped webpack dependency to 5.94.0
+# [Unreleased](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/4.2.16...HEAD)
+* [STREAM-799](https://inindca.atlassian.net/browse/STREAM-799) - Updated axios to v1.10.0 to fix critical Snyk vulnerability.
+* [STREAM-800](https://inindca.atlassian.net/browse/STREAM-800) - Added GitHub Actions for linting, testing, and building in an effort to make the build process more transparent and reliable.
 
-# [Unreleased](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/4.2.15...HEAD)
+# [4.2.16](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.2.15...4.2.16)
 ### Changed
 * [STREAM-614](https://inindca.atlassian.net/browse/STREAM-481) - Removed Jenkins pipeline infrastructure.
 
