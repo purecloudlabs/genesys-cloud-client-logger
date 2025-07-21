@@ -4,9 +4,6 @@ static-asset-bundle
 # IDE - VSCode
 !.vscode/launch.json
 
-# IDE - Jetbrains
-/.idea
-
 .ignore
 .npmrc
 .DS_Store
