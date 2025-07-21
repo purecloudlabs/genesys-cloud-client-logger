@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-# [Unreleased](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/4.2.16...HEAD)
+# [Unreleased](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/4.2.17...HEAD)
 
 # [4.2.17](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.2.16...4.2.17)
 * [STREAM-799](https://inindca.atlassian.net/browse/STREAM-799) - Updated axios to v1.10.0 to fix critical Snyk vulnerability.
