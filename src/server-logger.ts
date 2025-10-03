@@ -131,7 +131,7 @@ export class ServerLogger {
   }
 
   sendAllLogsInstantly (): Promise<any>[] {
-    /* don't want this to be async because this is called from the window 'unload' event */
+    /* don't want this to be async because this is called from the document 'visibilitychange' event */
     /* this will send any queued up requests */
     return this.logUploader.sendEntireQueue()
       .concat(
