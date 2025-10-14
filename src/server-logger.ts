@@ -34,7 +34,11 @@ export class ServerLogger {
     this.debounceLogUploadTime = logger.config.uploadDebounceTime || DEFAULT_UPLOAD_DEBOUNCE;
     this.logUploader = getOrCreateLogUploader(logger.config.url, logger.config.debugMode, logger.config.useUniqueLogUploader, logger.config.customHeaders);
 
-    window.addEventListener('unload', this.sendAllLogsInstantly.bind(this));
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') {
+        this.sendAllLogsInstantly();
+      }
+    });
 
     /* when we stop server logging, we need to clear everything out */
     this.logger.on('onStop', (_reason) => {
@@ -127,7 +131,7 @@ export class ServerLogger {
   }
 
   sendAllLogsInstantly (): Promise<any>[] {
-    /* don't want this to be async because this is called from the window 'unload' event */
+    /* don't want this to be async because this is called from the document 'visibilitychange' event */
     /* this will send any queued up requests */
     return this.logUploader.sendEntireQueue()
       .concat(
