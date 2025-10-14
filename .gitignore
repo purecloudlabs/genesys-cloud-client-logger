@@ -11,3 +11,4 @@ static-asset-bundle
 dist
 coverage/
 genesys-cloud-client-logger*.tgz
+/test-results

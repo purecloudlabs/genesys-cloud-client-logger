@@ -5,8 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 # [Unreleased](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/4.2.17...HEAD)
+### Changed
+* [STREAM-868](https://inindca.atlassian.net/browse/STREAM-868) - Generate a test report in JUnit.xml format.
+* [STREAM-950](https://inindca.atlassian.net/browse/STREAM-950) - Move away from `unload` to send logs at the end of a user's session.
 
 # [4.2.17](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.2.16...4.2.17)
+### Changed
 * [STREAM-799](https://inindca.atlassian.net/browse/STREAM-799) - Updated axios to v1.10.0 to fix critical Snyk vulnerability.
 * [STREAM-800](https://inindca.atlassian.net/browse/STREAM-800) - Added GitHub Actions for linting, testing, and building in an effort to make the build process more transparent and reliable.
 
@@ -37,7 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # [4.2.9](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.2.8...4.2.9)
 ### Changed
-* [PCM-2296](https://inindca.atlassian.net/browse/PCM-2296) Updated Axios to v1.6.5 to fix Snyk vulnerabilities. 
+* [PCM-2296](https://inindca.atlassian.net/browse/PCM-2296) Updated Axios to v1.6.5 to fix Snyk vulnerabilities.
 
 # [4.2.8](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.2.7...4.2.8)
 ### Changed
