@@ -114,7 +114,7 @@ export class LogUploader {
       );
     }
 
-    /* don't want this to be async because this is called from the window 'unload' event */
+    /* don't want this to be async because this is called from the document 'visibilitychange' event */
     return promises;
   }
 
