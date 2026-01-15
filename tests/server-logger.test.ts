@@ -59,20 +59,47 @@ describe('ServerLogger', () => {
 
     it('should set config to passed in options', () => {
       logger.config.uploadDebounceTime = 14000;
-      jest.spyOn(window, 'addEventListener').mockImplementation();
+      const eventListenerSpy = jest.spyOn(document, 'addEventListener');
 
       serverLogger = new ServerLogger(logger);
 
       expect(serverLogger['logger']).toBe(logger);
       expect(serverLogger['debounceLogUploadTime']).toBe(14000);
       expect(serverLogger['logUploader']).toBe(getOrCreateLogUploader(config.url));
-      expect(window.addEventListener).toHaveBeenCalledWith('unload', expect.any(Function));
+      expect(eventListenerSpy).toHaveBeenCalledWith('visibilitychange', expect.any(Function));
+
+      eventListenerSpy.mockRestore();
     });
 
     it('should set defaults', () => {
       expect(serverLogger['logger']).toBe(logger);
       expect(serverLogger['debounceLogUploadTime']).toBe(4000);
       expect(serverLogger['logUploader']).toBe(getOrCreateLogUploader(config.url));
+    });
+
+    it('should only call sendAllLogsInstantly when the visibilityState is hidden', () => {
+      const eventListenerSpy = jest.spyOn(document, 'addEventListener');
+      serverLogger = new ServerLogger(logger);
+      const sendLogsSpy = serverLogger.sendAllLogsInstantly = jest.fn();
+      const visibilityHandler = eventListenerSpy.mock.calls[0][1] as EventListener;
+      const visibilityEvent = new Event('visibilitychange');
+
+      Object.defineProperty(document, 'visibilityState', {
+        writable: true,
+        value: 'visible'
+      });
+      visibilityHandler(visibilityEvent);
+      expect(sendLogsSpy).not.toHaveBeenCalled();
+
+      Object.defineProperty(document, 'visibilityState', {
+        writable: true,
+        value: 'hidden'
+      });
+      visibilityHandler(visibilityEvent);
+      expect(sendLogsSpy).toHaveBeenCalled();
+
+      eventListenerSpy.mockRestore();
+      sendLogsSpy.mockRestore();
     });
   });
 
