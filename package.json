@@ -70,8 +70,5 @@
     "safe-json-stringify": "^1.2.0",
     "strict-event-emitter-types": "^2.0.0",
     "uuid": "^9.0.1"
-  },
-  "volta": {
-    "node": "20.19.6"
   }
 }
