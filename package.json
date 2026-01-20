@@ -36,6 +36,7 @@
     "@babel/core": "^7.9.0",
     "@babel/plugin-transform-runtime": "^7.9.0",
     "@babel/preset-env": "^7.9.5",
+    "@babel/preset-typescript": "^7.17.12",
     "@types/jest": "^29.5.8",
     "@types/safe-json-stringify": "^1.1.0",
     "@types/uuid": "^9.0.7",
@@ -62,7 +63,6 @@
     "webpack-cli": "^3.3.11"
   },
   "dependencies": {
-    "@babel/preset-typescript": "^7.17.12",
     "@babel/runtime": "^7.9.2",
     "axios": "^1.10.0",
     "date-fns": "^2.29.3",
