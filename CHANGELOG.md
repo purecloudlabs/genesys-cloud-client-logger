@@ -4,9 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-# [Unreleased](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/4.2.18...HEAD)
+# [Unreleased](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/4.2.19...HEAD)
 
-# [4.2.17](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.2.17...4.2.18)
+# [4.2.19](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.2.18...4.2.19)
+### Changed
+* [STREAM-1054](https://inindca.atlassian.net/browse/STREAM-1054) - Move @babel/preset-typescript to be a dev dependency.
+* [STREAM-1210](https://inindca.atlassian.net/browse/STREAM-1210) - Updated axios to v1.14.0 to fix Snyk vulnerability.
+* [STREAM-1420](https://inindca.atlassian.net/browse/STREAM-1420) - Updated axios to v1.15.0 to fix Snyk vulnerability.
+
+# [4.2.18](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.2.17...4.2.18)
 ### Changed
 * [STREAM-868](https://inindca.atlassian.net/browse/STREAM-868) - Generate a test report in JUnit.xml format.
 * [STREAM-950](https://inindca.atlassian.net/browse/STREAM-950) - Move away from `unload` to send logs at the end of a user's session.
