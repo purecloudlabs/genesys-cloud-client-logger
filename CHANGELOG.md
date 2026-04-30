@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 # [Unreleased](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/4.2.19...HEAD)
+### Changed
+* [STREAM-1506](https://inindca.atlassian.net/browse/STREAM-1506) - Update `axios` to v1.15.2
 
 # [4.2.19](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.2.18...4.2.19)
 ### Changed
