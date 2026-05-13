@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 # [Unreleased](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/4.2.19...HEAD)
 ### Changed
 * [STREAM-1506](https://inindca.atlassian.net/browse/STREAM-1506) - Update `axios` to v1.15.2
+* [STREAM-1603](https://inindca.atlassian.net/browse/STREAM-1603) - Replace uuid with globalThis.crypto.randomUUID()
 
 # [4.2.19](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.2.18...4.2.19)
 ### Changed
