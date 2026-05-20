@@ -1,5 +1,4 @@
 import { EventEmitter } from 'events';
-import { v4 } from 'uuid';
 import stringify from 'safe-json-stringify';
 
 import { ILoggerConfig, LogLevel, ILogger, LogFormatterFn, StopReason, LoggerEvents } from './interfaces';
@@ -25,7 +24,7 @@ export class Logger extends (EventEmitter as { new(): StrictEventEmitter<EventEm
   constructor (config: ILoggerConfig) {
     super();
     Object.defineProperty(this, 'clientId', {
-      value: v4(),
+      value: globalThis.crypto.randomUUID(),
       writable: false
     });
 
