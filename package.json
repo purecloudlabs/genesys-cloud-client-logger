@@ -63,10 +63,14 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.9.2",
-    "axios": "^1.15.2",
+    "axios": "^1.16.0",
     "date-fns": "^2.29.3",
     "exponential-backoff": "^3.1.0",
     "safe-json-stringify": "^1.2.0",
     "strict-event-emitter-types": "^2.0.0"
-  }
+  },
+  "overrides": {
+    "axios": "$axios"
+  },
+  "//overrides": "Pin axios >=1.16.0 — fixes SNYK-JS-AXIOS-17111062, SNYK-JS-AXIOS-17111079, SNYK-JS-AXIOS-17172681"
 }
