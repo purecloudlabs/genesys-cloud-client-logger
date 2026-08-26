@@ -134,10 +134,12 @@ export class ServerLogger {
     /* don't want this to be async because this is called from the document 'visibilitychange' event */
     /* this will send any queued up requests */
     return this.logUploader.sendEntireQueue()
+      .map(promise => promise.catch(() => undefined))
       .concat(
         /* this will send any items in the buffer still */
         this.logBuffer.map((item: ILogBufferItem) =>
           this.logUploader.postLogsToEndpointInstantly(this.convertToRequestParams(item.traces.reverse()), { saveOnFailure: true })
+            .catch(() => undefined)
         )
       );
   }
