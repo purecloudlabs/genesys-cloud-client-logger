@@ -112,7 +112,7 @@ export class Logger extends (EventEmitter as { new(): StrictEventEmitter<EventEm
    * Stop sending logs to the server. Note; this will clear
    * any items that are currently in the buffer. If you wish
    * to send any currently pending log items, use
-   * `sendAllLogsInstantly()` before stopping the server loggin.
+   * `sendAllLogsInstantly()` before stopping the server logging.
    *
    * @param reason optional; default `'force'`
    * @returns void
