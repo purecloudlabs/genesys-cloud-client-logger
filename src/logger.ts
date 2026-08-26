@@ -1,4 +1,5 @@
 import { EventEmitter } from 'events';
+
 import stringify from 'safe-json-stringify';
 
 import { ILoggerConfig, LogLevel, ILogger, LogFormatterFn, StopReason, LoggerEvents } from './interfaces';
