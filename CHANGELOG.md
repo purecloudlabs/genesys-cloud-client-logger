@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 # [Unreleased](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v5.0.0...HEAD)
+### Changed
+* [STREAM-1821](https://inindca.atlassian.net/browse/STREAM-1821) - Catch exceptions from `sendAllLogsInstantly` that clients may not be able to catch themselves.
 
 # [5.0.0](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.2.19...v5.0.0)
 ### Breaking Changes
