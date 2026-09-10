@@ -497,6 +497,19 @@ describe('ServerLogger', () => {
 
       await Promise.resolve();
     });
+
+    it('should still resolve for undefined errors', async () => {
+      const bufferItem: ILogBufferItem = { size: 0, traces: [{ id: 'asdf' }] as any };
+      serverLogger['logBuffer'].push(bufferItem);
+
+      jest.spyOn(serverLogger['logUploader'], 'sendEntireQueue').mockReturnValue([Promise.reject(undefined)]);
+      jest.spyOn(serverLogger['logUploader'], 'postLogsToEndpointInstantly').mockRejectedValue(undefined);
+
+      const promises = serverLogger['sendAllLogsInstantly']();
+
+      let combinedPromise = Promise.all(promises);
+      await expect(combinedPromise).resolves.toBeTruthy();
+    });
   });
 
   describe('truncateLog()', () => {

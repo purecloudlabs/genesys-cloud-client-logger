@@ -4,7 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-# [Unreleased](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v5.0.0...HEAD)
+# [Unreleased](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v5.0.1...HEAD)
+
+# [5.0.1](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v5.0.0...v5.0.1)
+### Changed
+* [STREAM-1938](https://inindca.atlassian.net/browse/STREAM-1938) - Upgraded axios to v1.18.0 to fix Snyk vulnerabilities
+* [STREAM-1821](https://inindca.atlassian.net/browse/STREAM-1821) - Catch exceptions from `sendAllLogsInstantly` that clients may not be able to catch themselves.
 
 # [5.0.0](https://github.com/purecloudlabs/genesys-cloud-client-logger/compare/v4.2.19...v5.0.0)
 ### Breaking Changes

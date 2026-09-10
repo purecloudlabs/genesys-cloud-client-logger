@@ -1,6 +1,6 @@
 {
   "name": "genesys-cloud-client-logger",
-  "version": "5.0.0",
+  "version": "5.0.1",
   "description": "Common logger for genesys cloud client application to upload logs server",
   "main": "dist/src/index.js",
   "module": "dist/es/index.js",
@@ -38,6 +38,7 @@
     "@babel/preset-env": "^7.9.5",
     "@babel/preset-typescript": "^7.17.12",
     "@types/jest": "^29.5.8",
+    "@types/node": "^24.0.15",
     "@types/safe-json-stringify": "^1.1.0",
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.33.0",
@@ -63,7 +64,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.9.2",
-    "axios": "^1.15.2",
+    "axios": "^1.18.0",
     "date-fns": "^2.29.3",
     "exponential-backoff": "^3.1.0",
     "safe-json-stringify": "^1.2.0",
