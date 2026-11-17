@@ -69,5 +69,8 @@
     "exponential-backoff": "^3.1.0",
     "safe-json-stringify": "^1.2.0",
     "strict-event-emitter-types": "^2.0.0"
+  },
+  "overrides": {
+    "follow-redirects": "^1.16.2"
   }
 }
